@@ -9,6 +9,11 @@ no extra arguments. A user whose role link is missing (e.g. a teacher account
 without a teacher record) gets the most restrictive answer.
 """
 
+from sqlalchemy import select
+from sqlalchemy.orm import object_session
+
+from app.models.course import Course
+from app.models.enrollment import Enrollment
 from app.models.teacher import Teacher
 from app.models.user import User, UserRole
 
@@ -55,6 +60,17 @@ def can_manage_department(user: User, dept_id: int) -> bool:
     return teacher.department.head_id == teacher.id
 
 
+def managed_department_id(user: User) -> int | None:
+    """The id of the department a HOD actually heads, or None.
+
+    None for every other role, and for a HOD whose head role is stale.
+    """
+    teacher = user.teacher if user.role is UserRole.HOD else None
+    if teacher is None or teacher.department.head_id != teacher.id:
+        return None
+    return teacher.department_id
+
+
 def teaches_course(user: User, course_id: int) -> bool:
     """True if the user is the assigned teacher of course `course_id`.
 
@@ -73,3 +89,22 @@ def is_self_student(user: User, student_id: int) -> bool:
     Only student accounts can match; other roles never do.
     """
     return user.role is UserRole.STUDENT and user.student_id == student_id
+
+
+def teaches_student(user: User, student_id: int) -> bool:
+    """True if the student is enrolled (any semester) in a course the user teaches.
+
+    * hod / teacher: students in courses assigned to their teacher record
+    * admin / student: never
+    """
+    teacher = _linked_teacher(user)
+    session = object_session(user)
+    if teacher is None or session is None:
+        return False
+    query = (
+        select(Enrollment.id)
+        .join(Course, Course.id == Enrollment.course_id)
+        .where(Course.teacher_id == teacher.id, Enrollment.student_id == student_id)
+        .limit(1)
+    )
+    return session.scalar(query) is not None

@@ -18,10 +18,12 @@ from sqlalchemy.orm import Session
 from app.core.permissions import (
     can_manage_department,
     is_self_student,
+    managed_department_id,
     teaches_course,
+    teaches_student,
     user_department_id,
 )
-from app.models import Course, Department, Student, User, UserRole
+from app.models import Course, Department, Enrollment, Student, User, UserRole
 from tests.conftest import Factory
 
 
@@ -221,3 +223,75 @@ def test_non_student_with_a_matching_student_link_is_still_denied(factory: Facto
     odd_teacher = factory.user(UserRole.TEACHER, student_id=record.id)
 
     assert is_self_student(odd_teacher, record.id) is False
+
+
+# ---------- managed_department_id (T3.3) ----------
+
+
+@pytest.mark.parametrize(
+    ("user", "dept"),
+    [
+        ("admin", None),
+        ("hod_a", "dept_a"),
+        ("hod_b", "dept_b"),
+        ("teacher_a", None),
+        ("student_a", None),
+    ],
+)
+def test_managed_department_id(world: World, user: str, dept: str | None) -> None:
+    expected = getattr(world, dept).id if dept else None
+    assert managed_department_id(getattr(world, user)) == expected
+
+
+def test_managed_department_id_is_none_for_a_stale_hod(session: Session, world: World) -> None:
+    assert world.teacher_a.teacher is not None
+    world.dept_a.head_id = world.teacher_a.teacher.id
+    session.commit()
+    session.expire_all()
+
+    assert managed_department_id(world.hod_a) is None
+
+
+# ---------- teaches_student (T3.3) ----------
+
+
+@pytest.fixture
+def enrolled(session: Session, world: World) -> World:
+    """student_a in course_a1 (teacher_a) and student_b in course_a2 (hod_a)."""
+    session.add_all(
+        [
+            Enrollment(
+                student_id=world.student_a_record.id,
+                course_id=world.course_a1.id,
+                semester="2026-Fall",
+            ),
+            Enrollment(
+                student_id=world.student_b_record.id,
+                course_id=world.course_a2.id,
+                semester="2026-Spring",
+            ),
+        ]
+    )
+    session.commit()
+    return world
+
+
+@pytest.mark.parametrize(
+    ("user", "student", "allowed"),
+    [
+        ("teacher_a", "student_a_record", True),
+        ("teacher_a", "student_b_record", False),  # enrolled, but in someone else's course
+        ("hod_a", "student_b_record", True),  # in the HOD's own course, other department
+        ("hod_a", "student_a_record", False),  # own department, but not their course
+        ("teacher_b", "student_a_record", False),
+        ("admin", "student_a_record", False),
+        ("student_a", "student_a_record", False),
+    ],
+)
+def test_teaches_student(enrolled: World, user: str, student: str, allowed: bool) -> None:
+    world = enrolled
+    assert teaches_student(getattr(world, user), getattr(world, student).id) is allowed
+
+
+def test_teaches_student_with_no_enrollments_is_false(world: World) -> None:
+    assert teaches_student(world.teacher_a, world.student_a_record.id) is False
