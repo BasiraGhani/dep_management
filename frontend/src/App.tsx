@@ -1,10 +1,21 @@
+import { QueryClientProvider } from '@tanstack/react-query';
+import { useState } from 'react';
+import { BrowserRouter } from 'react-router';
+
+import { AppRoutes } from './AppRoutes';
+import { AuthProvider } from './auth/AuthProvider';
+import { createQueryClient } from './lib/queryClient';
+
 function App() {
+  const [queryClient] = useState(createQueryClient);
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50">
-      <h1 className="text-2xl font-semibold text-slate-800">
-        University Department Management System
-      </h1>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
