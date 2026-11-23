@@ -1,5 +1,27 @@
 # Frontend
 
-React + TypeScript (Vite), TanStack Query, Tailwind CSS (Node 20+).
+React + TypeScript (Vite), Tailwind CSS, Vitest + React Testing Library (Node 20+). Planned layout: `../docs/ARCHITECTURE.md` §5.
 
-> Placeholder. The frontend tooling is added in **T0.3**. See `../docs/ARCHITECTURE.md` §5 for the planned layout.
+## Setup
+
+```bash
+cd frontend
+npm ci
+```
+
+## Run
+
+```bash
+npm run dev            # http://localhost:5173
+```
+
+## Checks
+
+```bash
+npm run lint           # ESLint + Prettier check
+npm run typecheck      # tsc (strict)
+npm run test -- --run  # Vitest
+npm run build
+```
+
+`npm run format` applies Prettier formatting.
