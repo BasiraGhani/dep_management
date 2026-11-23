@@ -13,6 +13,18 @@ cp .env.example .env              # then set SECRET_KEY
 alembic upgrade head              # create / update the database schema
 ```
 
+## Seed data
+
+```bash
+python -m app.cli seed-admin   # first admin from FIRST_ADMIN_USERNAME / FIRST_ADMIN_PASSWORD
+python -m app.cli seed-demo    # 3 departments, 10 teachers, 60 students, 12 courses,
+                               # enrollments with grades, and one login per role
+```
+
+Both are safe to run again: they never create duplicates or change existing rows.
+`seed-demo` prints its logins (`demo.admin`, `demo.hod`, `demo.teacher`,
+`demo.student`, password `demo-password`). Use them for development only.
+
 ## Run
 
 ```bash
