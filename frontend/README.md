@@ -9,6 +9,9 @@ cd frontend
 npm ci
 ```
 
+The backend URL comes from `VITE_API_URL` (default `http://localhost:8000/api/v1`).
+To change it, copy `.env.example` to `.env.local` and edit it.
+
 ## Run
 
 ```bash

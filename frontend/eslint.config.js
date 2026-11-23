@@ -26,6 +26,8 @@ export default defineConfig([
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
+      // Numbers (e.g. ids in URLs) are safe in template strings; objects still aren't.
+      '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       '@typescript-eslint/ban-ts-comment': [
         'error',
         { 'ts-ignore': 'allow-with-description', minimumDescriptionLength: 10 },
