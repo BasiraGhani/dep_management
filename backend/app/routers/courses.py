@@ -1,6 +1,6 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Body, Depends, Query, status
 
 from app.core.deps import CurrentUser, DbSession, ListParams, require_roles
 from app.models import User, UserRole
@@ -12,7 +12,9 @@ from app.schemas.course import (
     CourseUpdate,
     RosterEntry,
 )
+from app.schemas.enrollment import BulkGradeItem, EnrollmentOut
 from app.services import courses as service
+from app.services import grades as grades_service
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
@@ -107,3 +109,25 @@ def delete_course(db: DbSession, user: AdminOrHod, course_id: int) -> None:
     """Delete a course (admin; HOD in their department). Blocked (409) while it
     has enrollments."""
     service.delete_course(db, course_id, user)
+
+
+@router.put(
+    "/{course_id}/grades",
+    response_model=list[EnrollmentOut],
+    responses=NOT_FOUND
+    | FORBIDDEN
+    | {
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {
+            "description": "Bad grade, repeated row, or enrollment not in this course"
+        }
+    },
+)
+def set_course_grades(
+    db: DbSession,
+    user: Staff,
+    course_id: int,
+    items: Annotated[list[BulkGradeItem], Body(min_length=1, max_length=1000)],
+) -> Any:
+    """Set many grades of one course at once (bulk grade entry). All-or-nothing:
+    if any row is invalid, no grade is changed."""
+    return grades_service.set_course_grades(db, course_id, items, user)

@@ -50,3 +50,20 @@ class EnrollmentOut(BaseModel):
 class EnrollmentListOut(BaseModel):
     items: list[EnrollmentOut]
     total: int
+
+
+class GradeUpdate(BaseModel):
+    """Body of PATCH /enrollments/{id}/grade. `grade: null` clears it (not graded yet)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    grade: Grade | None
+
+
+class BulkGradeItem(BaseModel):
+    """One row of PUT /courses/{id}/grades."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enrollment_id: int
+    grade: Grade | None

@@ -66,11 +66,12 @@ def create_student(db: DbSession, user: AdminOrHod, body: StudentCreate) -> Any:
 
 @router.get("/{student_id}", response_model=StudentDetailOut, responses=NOT_FOUND | FORBIDDEN)
 def get_student(db: DbSession, user: CurrentUser, student_id: int) -> StudentDetailOut:
-    """A student with their enrollments. Students can only read their own record."""
+    """A student with their enrollments and GPA. Students can only read their own record."""
     detail = service.get_student_detail(db, student_id, user)
     return StudentDetailOut(
         **StudentOut.model_validate(detail.student).model_dump(),
         enrollments=[StudentEnrollmentOut.model_validate(e) for e in detail.enrollments],
+        gpa=detail.gpa,
         user_id=detail.user_id,
     )
 

@@ -9,12 +9,15 @@ from app.schemas.enrollment import (
     EnrollmentCreate,
     EnrollmentListOut,
     EnrollmentOut,
+    GradeUpdate,
 )
 from app.services import enrollments as service
+from app.services import grades as grades_service
 
 router = APIRouter(prefix="/enrollments", tags=["enrollments"])
 
 AdminOrHod = Annotated[User, Depends(require_roles(UserRole.ADMIN, UserRole.HOD))]
+Staff = Annotated[User, Depends(require_roles(UserRole.ADMIN, UserRole.HOD, UserRole.TEACHER))]
 
 Responses = dict[int | str, dict[str, Any]]
 
@@ -75,3 +78,17 @@ def enroll(db: DbSession, user: AdminOrHod, body: EnrollmentCreate) -> Any:
 def unenroll(db: DbSession, user: AdminOrHod, enrollment_id: int) -> None:
     """Remove an enrollment (admin; HOD for courses of their department)."""
     service.unenroll(db, enrollment_id, user)
+
+
+@router.patch(
+    "/{enrollment_id}/grade",
+    response_model=EnrollmentOut,
+    responses={
+        status.HTTP_403_FORBIDDEN: {"description": "Not your course or department"},
+        status.HTTP_404_NOT_FOUND: {"description": "Enrollment not found"},
+    },
+)
+def set_grade(db: DbSession, user: Staff, enrollment_id: int, body: GradeUpdate) -> Any:
+    """Set or clear (`null`) one grade (admin; HOD of the course's department; the
+    course's teacher)."""
+    return grades_service.set_grade(db, enrollment_id, body.grade, user)
