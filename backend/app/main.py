@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import auth
+from app.routers import auth, departments
 
 API_PREFIX = "/api/v1"
 
@@ -26,6 +26,7 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     app.include_router(auth.router, prefix=API_PREFIX)
+    app.include_router(departments.router, prefix=API_PREFIX)
 
     return app
 
