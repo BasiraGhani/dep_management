@@ -33,6 +33,7 @@ from sqlalchemy import Connection, Engine, event  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 from app.config import BACKEND_DIR  # noqa: E402
+from app.core.security import hash_password  # noqa: E402
 from app.database import create_db_engine, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import (  # noqa: E402
@@ -221,6 +222,7 @@ class Factory:
         role: UserRole = UserRole.ADMIN,
         teacher: Teacher | None = None,
         student: Student | None = None,
+        password: str | None = None,
         **overrides: Any,
     ) -> User:
         """Create an active user account with a link that is valid for `role`.
@@ -230,13 +232,16 @@ class Factory:
         * student: linked to `student` (a new student if not given)
 
         Pass `teacher_id=` / `student_id=` to set the links directly, e.g. to test
-        invalid combinations. Default username: `user<n>`. `password_hash` is a
-        placeholder until password hashing exists (T2.1).
+        invalid combinations. Default username: `user<n>`.
+
+        `password`: if given, it is hashed (argon2) so the user can log in with it.
+        Otherwise `password_hash` is a placeholder that matches no password, which
+        keeps tests that don't log in fast (hashing takes ~30 ms).
         """
         n = _next()
         fields: dict[str, Any] = {
             "username": f"user{n}",
-            "password_hash": "not-a-real-hash",
+            "password_hash": "not-a-real-hash" if password is None else hash_password(password),
             "role": role,
         }
         links_given = "teacher_id" in overrides or "student_id" in overrides
