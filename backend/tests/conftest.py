@@ -39,6 +39,8 @@ from app.main import app  # noqa: E402
 from app.models import (  # noqa: E402
     Course,
     Department,
+    Enrollment,
+    Grade,
     Student,
     StudentStatus,
     Teacher,
@@ -251,6 +253,27 @@ class Factory:
             elif role is UserRole.STUDENT:
                 fields["student_id"] = (student or self.student()).id
         return self._save(User(**(fields | overrides)))
+
+    def enrollment(
+        self,
+        student: Student | None = None,
+        course: Course | None = None,
+        semester: str = "2026-Fall",
+        grade: Grade | None = None,
+        **overrides: Any,
+    ) -> Enrollment:
+        """Enroll `student` in `course` for `semester` (default 2026-Fall, ungraded).
+
+        A new student and course are created if not given. Business rules
+        (BR-4 active students, BR-5 capacity) are service rules and are not
+        checked here; the database still rejects duplicates.
+        """
+        fields: dict[str, Any] = {"semester": semester, "grade": grade}
+        if "student_id" not in overrides:
+            fields["student_id"] = (student or self.student()).id
+        if "course_id" not in overrides:
+            fields["course_id"] = (course or self.course()).id
+        return self._save(Enrollment(**(fields | overrides)))
 
 
 @pytest.fixture

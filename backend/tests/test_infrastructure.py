@@ -80,7 +80,7 @@ def test_every_factory_method_is_documented() -> None:
         for name, member in pyinspect.getmembers(Factory, pyinspect.isfunction)
         if not name.startswith("_")
     }
-    assert set(methods) == {"department", "teacher", "student", "course", "user"}
+    assert set(methods) == {"department", "teacher", "student", "course", "user", "enrollment"}
     assert Factory.__doc__
     for name, method in methods.items():
         assert method.__doc__, f"Factory.{name} has no docstring"
