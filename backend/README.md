@@ -34,3 +34,13 @@ ruff check . && ruff format --check .
 mypy app
 pytest -q
 ```
+
+Tests run in a random order on every run (pytest-random-order), so state leaking
+between tests shows up as a failure. The run prints its seed; to repeat that order:
+
+```bash
+pytest --random-order-seed=<seed>
+```
+
+Test fixtures (`tests/conftest.py`): `session` (rolled back after each test),
+`client` (a `TestClient` using that session) and `factory` (creates valid rows).
