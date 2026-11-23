@@ -68,9 +68,10 @@ def test_missing_secret_key_is_rejected() -> None:
 
 
 @pytest.mark.usefixtures("clean_env")
-def test_short_secret_key_is_rejected() -> None:
+@pytest.mark.parametrize("secret_key", ["too-short", "s" * 31])
+def test_secret_key_shorter_than_32_characters_is_rejected(secret_key: str) -> None:
     with pytest.raises(ValidationError, match="secret_key"):
-        Settings(_env_file=None, secret_key="too-short")
+        Settings(_env_file=None, secret_key=secret_key)
 
 
 @pytest.mark.usefixtures("clean_env")

@@ -22,7 +22,8 @@ class Settings(BaseSettings):
     )
 
     database_url: str = "sqlite:///./dept.db"
-    secret_key: str = Field(min_length=16)
+    # Signs JWTs (HS256). PyJWT recommends at least 32 bytes for HS256 keys.
+    secret_key: str = Field(min_length=32)
     access_token_expire_minutes: int = Field(default=60, ge=1)
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
     first_admin_username: str | None = None
