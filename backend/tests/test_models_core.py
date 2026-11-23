@@ -1,38 +1,19 @@
 """Schema tests for departments, teachers and students (T1.2).
 
-The database is built with the real Alembic migration, so these tests cover the
+The `engine`/`session` fixtures (conftest.py) build the database with the real
+Alembic migrations, so these tests cover the
 migration and the models together.
 """
 
-from collections.abc import Iterator
 from datetime import UTC, date, datetime
-from pathlib import Path
 from typing import Any
 
 import pytest
-from alembic import command
 from sqlalchemy import Engine, inspect, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.database import create_db_engine
 from app.models import Department, Student, StudentStatus, Teacher, TeacherTitle
-from tests.test_migrations import make_alembic_config
-
-
-@pytest.fixture
-def engine(tmp_path: Path) -> Iterator[Engine]:
-    database_url = f"sqlite:///{tmp_path / 'models.db'}"
-    command.upgrade(make_alembic_config(database_url), "head")
-    db_engine = create_db_engine(database_url)
-    yield db_engine
-    db_engine.dispose()
-
-
-@pytest.fixture
-def session(engine: Engine) -> Iterator[Session]:
-    with Session(engine) as db_session:
-        yield db_session
 
 
 def add_department(

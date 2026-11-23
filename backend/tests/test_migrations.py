@@ -1,19 +1,12 @@
 from pathlib import Path
 
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import inspect
 
-from app.config import BACKEND_DIR
 from app.database import create_db_engine
+from tests.conftest import make_alembic_config
 
-APP_TABLES = {"departments", "teachers", "students"}
-
-
-def make_alembic_config(database_url: str) -> Config:
-    config = Config(str(BACKEND_DIR / "alembic.ini"))
-    config.set_main_option("sqlalchemy.url", database_url)
-    return config
+APP_TABLES = {"departments", "teachers", "students", "courses", "enrollments", "users"}
 
 
 def table_names(database_url: str) -> set[str]:

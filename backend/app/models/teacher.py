@@ -8,7 +8,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from app.database import Base, IdMixin, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.course import Course
     from app.models.department import Department
+    from app.models.user import User
 
 
 class TeacherTitle(enum.StrEnum):
@@ -43,6 +45,8 @@ class Teacher(IdMixin, TimestampMixin, Base):
     department: Mapped["Department"] = relationship(
         back_populates="teachers", foreign_keys=[department_id]
     )
+    courses: Mapped[list["Course"]] = relationship(back_populates="teacher")
+    user: Mapped["User | None"] = relationship(back_populates="teacher")
 
     @validates("email")
     def _normalize_email(self, _key: str, value: str) -> str:

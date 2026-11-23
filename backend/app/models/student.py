@@ -9,6 +9,8 @@ from app.database import Base, IdMixin, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.department import Department
+    from app.models.enrollment import Enrollment
+    from app.models.user import User
 
 
 class StudentStatus(enum.StrEnum):
@@ -45,6 +47,12 @@ class Student(IdMixin, TimestampMixin, Base):
     enrollment_date: Mapped[date]
 
     department: Mapped["Department"] = relationship(back_populates="students")
+    enrollments: Mapped[list["Enrollment"]] = relationship(
+        back_populates="student",
+        cascade="all, delete-orphan",
+        passive_deletes=True,  # the database's ON DELETE CASCADE removes the rows (FR-4.4)
+    )
+    user: Mapped["User | None"] = relationship(back_populates="student")
 
     @validates("student_no")
     def _normalize_student_no(self, _key: str, value: str) -> str:

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from app.database import Base, IdMixin, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.course import Course
     from app.models.student import Student
     from app.models.teacher import Teacher
 
@@ -32,6 +33,7 @@ class Department(IdMixin, TimestampMixin, Base):
         back_populates="department", foreign_keys="Teacher.department_id"
     )
     students: Mapped[list["Student"]] = relationship(back_populates="department")
+    courses: Mapped[list["Course"]] = relationship(back_populates="department")
 
     @validates("code")
     def _normalize_code(self, _key: str, value: str) -> str:
