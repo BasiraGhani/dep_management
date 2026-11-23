@@ -16,6 +16,10 @@ select = [
     "SIM", # flake8-simplify
 ]
 
+[tool.ruff.lint.isort]
+# The local alembic/ folder would otherwise make ruff treat the alembic package as first-party.
+known-third-party = ["alembic"]
+
 [tool.ruff.lint.flake8-bugbear]
 # FastAPI's Depends()/Query() in argument defaults are intentional.
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path", "fastapi.Body"]
