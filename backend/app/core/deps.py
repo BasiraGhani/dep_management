@@ -1,9 +1,10 @@
 """FastAPI dependencies shared by the routers."""
 
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
@@ -11,7 +12,14 @@ from app.database import get_db
 from app.models.user import User, UserRole
 from app.services import auth as auth_service
 
-__all__ = ["CurrentUser", "DbSession", "get_current_user", "get_db", "require_roles"]
+__all__ = [
+    "CurrentUser",
+    "DbSession",
+    "ListParams",
+    "get_current_user",
+    "get_db",
+    "require_roles",
+]
 
 # tokenUrl makes the "Authorize" button in /docs log in through POST /auth/login.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -50,3 +58,21 @@ def require_roles(*roles: UserRole) -> Callable[[User], User]:
         return current_user
 
     return check_role
+
+
+@dataclass(frozen=True)
+class ListParams:
+    """`?search=`, `?skip=` and `?limit=` for list endpoints (CLAUDE.md conventions).
+
+    Use as `params: Annotated[ListParams, Depends()]`. `limit` defaults to 20, max 100.
+    """
+
+    search: Annotated[str | None, Query(max_length=100)] = None
+    skip: Annotated[int, Query(ge=0)] = 0
+    limit: Annotated[int, Query(ge=1, le=100)] = 20
+
+    @property
+    def search_term(self) -> str | None:
+        """`search` stripped of whitespace, or None if empty."""
+        term = (self.search or "").strip()
+        return term or None

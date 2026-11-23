@@ -6,6 +6,9 @@ from typing import Any
 from sqlalchemy import Engine, inspect, text
 from sqlalchemy.orm import Session
 
+from app.core.security import create_access_token
+from app.models import User
+
 
 def insert_raw(session: Session, table: str, **values: Any) -> None:
     """Insert a row with plain SQL, bypassing model validation, to test DB constraints.
@@ -35,3 +38,8 @@ def foreign_keys(engine: Engine, table: str) -> set[tuple[str, str]]:
 def nullable_columns(engine: Engine, table: str) -> set[str]:
     """Names of the nullable columns of `table`."""
     return {c["name"] for c in inspect(engine).get_columns(table) if c["nullable"]}
+
+
+def auth_headers(user: User) -> dict[str, str]:
+    """`Authorization` header with a valid token for `user` (no password needed)."""
+    return {"Authorization": f"Bearer {create_access_token(user.id, user.role)}"}

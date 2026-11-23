@@ -20,3 +20,15 @@ class TeacherOut(BaseModel):
     hire_date: date | None
     created_at: datetime
     updated_at: datetime
+
+
+class TeacherBrief(BaseModel):
+    """A teacher's name and title only, used inside other resources (e.g. a
+    department's head). Contains no contact details."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    first_name: str
+    last_name: str
+    title: TeacherTitle
