@@ -114,10 +114,12 @@ class StudentEnrollmentOut(BaseModel):
 
 
 class StudentDetailOut(StudentOut):
-    """GET /students/{id}: the student, their enrollments and account link.
+    """GET /students/{id}: the student, their enrollments, GPA and account link.
 
-    The GPA is added in T4.2.
+    `gpa` is on a 4.0 scale, weighted by credits over graded enrollments only
+    (FR-6.6); it is null until something is graded.
     """
 
     enrollments: list[StudentEnrollmentOut]
+    gpa: float | None
     user_id: int | None

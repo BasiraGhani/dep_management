@@ -31,6 +31,7 @@ from app.models import Course, Department, Enrollment, Student, StudentStatus, U
 from app.schemas.common import AccountCreate
 from app.schemas.student import StudentCreate, StudentUpdate
 from app.services.common import LIKE_ESCAPE, contains_pattern
+from app.services.gpa import calculate_gpa
 
 SELF_EDITABLE_FIELDS = frozenset({"phone", "email"})
 
@@ -39,6 +40,7 @@ SELF_EDITABLE_FIELDS = frozenset({"phone", "email"})
 class StudentDetail:
     student: Student
     enrollments: list[Enrollment]
+    gpa: float | None
     user_id: int | None
 
 
@@ -143,7 +145,8 @@ def get_student(db: Session, student_id: int) -> Student:
 
 
 def get_student_detail(db: Session, student_id: int, user: User) -> StudentDetail:
-    """The student with enrollments and account id; 404, or 403 outside the user's scope."""
+    """The student with enrollments, GPA and account id; 404, or 403 outside the
+    user's scope."""
     student = get_student(db, student_id)
     if not _can_read(user, student):
         raise _http(status.HTTP_403_FORBIDDEN, "You can't view this student")
@@ -154,7 +157,8 @@ def get_student_detail(db: Session, student_id: int, user: User) -> StudentDetai
         .order_by(Enrollment.id)
     ).all()
     user_id = db.scalar(select(User.id).where(User.student_id == student_id))
-    return StudentDetail(student=student, enrollments=list(enrollments), user_id=user_id)
+    gpa = calculate_gpa((e.grade, e.course.credits) for e in enrollments)
+    return StudentDetail(student=student, enrollments=list(enrollments), gpa=gpa, user_id=user_id)
 
 
 # ---------------------------------------------------------------------------
