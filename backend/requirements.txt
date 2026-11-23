@@ -6,3 +6,4 @@ alembic==1.20.1
 pydantic-settings==2.16.3
 pwdlib[argon2]==0.4.2
 PyJWT==2.15.1
+python-multipart==0.0.34  # form parsing for the OAuth2 password login (T2.2)
