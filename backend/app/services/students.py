@@ -95,17 +95,14 @@ def _can_manage(user: User, student: Student) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def list_students(
-    db: Session,
+def students_query(
     user: User,
     search: str | None,
     department_id: int | None,
     year: int | None,
     status_: StudentStatus | None,
-    skip: int,
-    limit: int,
-) -> tuple[list[Student], int]:
-    """A page of the students `user` may see, ordered by name, plus the total.
+) -> Select[Student]:
+    """The students `user` may see, filtered (no ordering or paging).
 
     `search` matches first name, last name, "first last", email or student number.
     """
@@ -130,6 +127,24 @@ def list_students(
         query = query.where(Student.year == year)
     if status_ is not None:
         query = query.where(Student.status == status_)
+    return query
+
+
+def list_students(
+    db: Session,
+    user: User,
+    search: str | None,
+    department_id: int | None,
+    year: int | None,
+    status_: StudentStatus | None,
+    skip: int,
+    limit: int,
+) -> tuple[list[Student], int]:
+    """A page of the students `user` may see, ordered by name, plus the total.
+
+    `search` matches first name, last name, "first last", email or student number.
+    """
+    query = students_query(user, search, department_id, year, status_)
     total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
     order = (Student.last_name, Student.first_name, Student.id)
     items = db.scalars(query.order_by(*order).offset(skip).limit(limit)).all()

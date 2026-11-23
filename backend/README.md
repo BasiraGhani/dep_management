@@ -47,6 +47,12 @@ mypy app
 pytest -q
 ```
 
+Coverage of the services and routers (the Gate 4 target is 80%):
+
+```bash
+pytest --cov=app.services --cov=app.routers
+```
+
 Tests run in a random order on every run (pytest-random-order), so state leaking
 between tests shows up as a failure. The run prints its seed; to repeat that order:
 

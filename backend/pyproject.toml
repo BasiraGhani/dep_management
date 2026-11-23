@@ -41,3 +41,11 @@ testpaths = ["tests"]
 pythonpath = ["."]
 # Random order across all tests catches state leaking between them (T1.4).
 addopts = "-ra --random-order-bucket=global"
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
