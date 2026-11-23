@@ -13,7 +13,7 @@ Who may do what:
 from dataclasses import dataclass
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, or_, select
+from sqlalchemy import Select, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -43,15 +43,12 @@ def _http(code: int, detail: str) -> HTTPException:
 # ---------------------------------------------------------------------------
 
 
-def list_teachers(
-    db: Session,
+def teachers_query(
     search: str | None,
     department_id: int | None,
     title: TeacherTitle | None,
-    skip: int,
-    limit: int,
-) -> tuple[list[Teacher], int]:
-    """A page of teachers ordered by last then first name, plus the total.
+) -> Select[Teacher]:
+    """Teachers matching the filters (no ordering or paging).
 
     `search` matches first name, last name, "first last" or email (any case).
     """
@@ -71,6 +68,22 @@ def list_teachers(
         query = query.where(Teacher.department_id == department_id)
     if title is not None:
         query = query.where(Teacher.title == title)
+    return query
+
+
+def list_teachers(
+    db: Session,
+    search: str | None,
+    department_id: int | None,
+    title: TeacherTitle | None,
+    skip: int,
+    limit: int,
+) -> tuple[list[Teacher], int]:
+    """A page of teachers ordered by last then first name, plus the total.
+
+    `search` matches first name, last name, "first last" or email (any case).
+    """
+    query = teachers_query(search, department_id, title)
     total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
     order = (Teacher.last_name, Teacher.first_name, Teacher.id)
     items = db.scalars(query.order_by(*order).offset(skip).limit(limit)).all()

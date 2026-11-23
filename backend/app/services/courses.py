@@ -14,7 +14,7 @@ Who may do what:
 from dataclasses import dataclass
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, or_, select
+from sqlalchemy import Select, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
@@ -47,15 +47,12 @@ def _manages(user: User, department_id: int) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def list_courses(
-    db: Session,
+def courses_query(
     search: str | None,
     department_id: int | None,
     teacher_id: int | None,
-    skip: int,
-    limit: int,
-) -> tuple[list[Course], int]:
-    """A page of courses ordered by code, plus the total. `search` matches code or title."""
+) -> Select[Course]:
+    """Courses matching the filters (no ordering or paging). `search` matches code or title."""
     query = select(Course)
     if search:
         pattern = contains_pattern(search)
@@ -69,6 +66,19 @@ def list_courses(
         query = query.where(Course.department_id == department_id)
     if teacher_id is not None:
         query = query.where(Course.teacher_id == teacher_id)
+    return query
+
+
+def list_courses(
+    db: Session,
+    search: str | None,
+    department_id: int | None,
+    teacher_id: int | None,
+    skip: int,
+    limit: int,
+) -> tuple[list[Course], int]:
+    """A page of courses ordered by code, plus the total. `search` matches code or title."""
+    query = courses_query(search, department_id, teacher_id)
     total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
     items = db.scalars(query.order_by(Course.code).offset(skip).limit(limit)).all()
     return list(items), total
