@@ -577,7 +577,7 @@ def test_conflict_message_lists_every_reason(client: TestClient, world: World) -
 
     assert response.json() == {
         "detail": "Teacher can't be deleted: they teach 1 course and have a login account "
-        "(deactivate or delete it first)"
+        "(delete it first: DELETE /users/{id})"
     }
 
 
