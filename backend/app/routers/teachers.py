@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, status
 
 from app.core.deps import CurrentUser, DbSession, ListParams, require_roles
 from app.models import TeacherTitle, User, UserRole
-from app.schemas.course import CourseBrief
+from app.schemas.common import CourseBrief
 from app.schemas.teacher import (
     TeacherCreate,
     TeacherDetailOut,

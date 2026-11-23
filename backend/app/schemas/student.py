@@ -5,8 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from app.models.enrollment import Grade
 from app.models.student import StudentStatus
-from app.schemas.common import AccountCreate, Email, PersonName, Phone
-from app.schemas.course import CourseBrief
+from app.schemas.common import AccountCreate, CourseBrief, Email, PersonName, Phone
 
 StudentNo = Annotated[str, Field(min_length=1, max_length=20, pattern=r"^[A-Za-z0-9-]+$")]
 Year = Annotated[int, Field(ge=1, le=6)]

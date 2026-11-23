@@ -4,8 +4,7 @@ from typing import Self
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from app.models.teacher import TeacherTitle
-from app.schemas.common import AccountCreate, Email, PersonName, Phone
-from app.schemas.course import CourseBrief
+from app.schemas.common import AccountCreate, CourseBrief, Email, PersonName, Phone
 
 
 def _not_in_future(value: date | None) -> date | None:
@@ -101,15 +100,3 @@ class TeacherPublicDetailOut(TeacherPublicOut):
     """GET /teachers/{id} for students: public fields and courses taught."""
 
     courses: list[CourseBrief]
-
-
-class TeacherBrief(BaseModel):
-    """A teacher's name and title only, used inside other resources (e.g. a
-    department's head). Contains no contact details."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    first_name: str
-    last_name: str
-    title: TeacherTitle
