@@ -2,12 +2,10 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, Field, model_validator
 
+from app.schemas.common import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH
 from app.schemas.student import StudentOut
 from app.schemas.teacher import TeacherOut
 from app.schemas.user import UserOut
-
-PASSWORD_MIN_LENGTH = 8
-PASSWORD_MAX_LENGTH = 128
 
 
 class Token(BaseModel):

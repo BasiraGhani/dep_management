@@ -33,7 +33,7 @@ from app.models import (
     User,
     UserRole,
 )
-from app.schemas.auth import PASSWORD_MIN_LENGTH
+from app.schemas.common import PASSWORD_MIN_LENGTH
 
 # ---------------------------------------------------------------------------
 # seed-admin

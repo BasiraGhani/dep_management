@@ -3,6 +3,7 @@ from typing import Annotated, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from app.schemas.common import Phone
 from app.schemas.course import CourseBrief
 from app.schemas.teacher import TeacherBrief
 
@@ -11,7 +12,6 @@ Code = Annotated[str, Field(min_length=1, max_length=10, pattern=r"^[A-Za-z0-9]+
 Name = Annotated[str, Field(min_length=1, max_length=120)]
 Description = Annotated[str, Field(max_length=2000)]
 Building = Annotated[str, Field(max_length=80)]
-Phone = Annotated[str, Field(min_length=3, max_length=30, pattern=r"^\+?[0-9()\- ]+$")]
 
 
 class DepartmentCreate(BaseModel):
