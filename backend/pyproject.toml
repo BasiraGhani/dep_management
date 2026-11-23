@@ -39,4 +39,5 @@ strict_equality = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-ra"
+# Random order across all tests catches state leaking between them (T1.4).
+addopts = "-ra --random-order-bucket=global"
