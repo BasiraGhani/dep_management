@@ -312,7 +312,8 @@ def delete_student(db: Session, student_id: int, user: User) -> None:
     if db.scalar(select(User.id).where(User.student_id == student.id)) is not None:
         raise _http(
             status.HTTP_409_CONFLICT,
-            "Student can't be deleted: they have a login account (deactivate or delete it first)",
+            "Student can't be deleted: they have a login account "
+            "(delete it first: DELETE /users/{id})",
         )
     db.delete(student)  # enrollments go too: ON DELETE CASCADE + ORM cascade
     db.commit()
