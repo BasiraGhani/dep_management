@@ -5,6 +5,10 @@ Who may do what:
 * create, delete: admin (the router enforces the role)
 * update: admin, any field; a HOD, only description / building / phone of the
   department they head (decision recorded for T3.1)
+
+BR-6 (T4.3): changing `head_id` also changes user roles in the same transaction:
+the new head's account becomes `hod` and the previous head's goes back to
+`teacher`. A head without a login account is fine; there is simply no role to set.
 """
 
 from dataclasses import dataclass
@@ -158,10 +162,35 @@ def _check_update_allowed(user: User, department: Department, data: DepartmentUp
     )
 
 
+def _account_of(db: Session, teacher_id: int) -> User | None:
+    return db.scalar(select(User).where(User.teacher_id == teacher_id))
+
+
+def _sync_head_roles(db: Session, previous_head_id: int | None, new_head_id: int | None) -> None:
+    """BR-6: demote the previous head's account to `teacher` and promote the new
+    head's account to `hod`. Changes are left in the session for the caller's
+    commit, so they land in the same transaction as the head change.
+
+    Only `teacher` <-> `hod` is changed; any other role is left alone. Heads
+    without a login account are skipped.
+    """
+    if previous_head_id == new_head_id:
+        return
+    if previous_head_id is not None:
+        previous = _account_of(db, previous_head_id)
+        if previous is not None and previous.role is UserRole.HOD:
+            previous.role = UserRole.TEACHER
+    if new_head_id is not None:
+        new = _account_of(db, new_head_id)
+        if new is not None and new.role is UserRole.TEACHER:
+            new.role = UserRole.HOD
+
+
 def update_department(
     db: Session, department_id: int, data: DepartmentUpdate, user: User
 ) -> Department:
-    """Apply a partial update (FR-2.1); see the module docstring for who may change what."""
+    """Apply a partial update (FR-2.1); see the module docstring for who may change
+    what and for the BR-6 role sync that comes with a head change."""
     department = get_department(db, department_id)
     _check_update_allowed(user, department, data)
 
@@ -170,8 +199,11 @@ def update_department(
     if changes.get("head_id") is not None:
         _check_head(db, department, changes["head_id"])
 
+    previous_head_id = department.head_id
     for field, value in changes.items():
         setattr(department, field, value)
+    if "head_id" in changes:
+        _sync_head_roles(db, previous_head_id, department.head_id)
     _commit(db)
     return department
 
