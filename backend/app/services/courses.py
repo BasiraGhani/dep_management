@@ -6,7 +6,8 @@ Who may do what:
   and the course's own teacher (Enrollments row of the permission matrix)
 * create: admin anywhere; HOD only in the department they head
 * update: admin any field; HOD courses of their department, without moving them
-  elsewhere; a teacher only the description of a course they teach
+  elsewhere; a teacher only the description of a course they teach. Capacity
+  can't drop below a semester's current enrollment (BR-5, added in T4.1)
 * delete: admin; HOD in their department. 409 while the course has enrollments
 """
 
@@ -21,6 +22,7 @@ from app.core.permissions import managed_department_id, teaches_course
 from app.models import Course, Department, Enrollment, Student, Teacher, User, UserRole
 from app.schemas.course import CourseCreate, CourseUpdate
 from app.services.common import LIKE_ESCAPE, contains_pattern
+from app.services.enrollments import busiest_semester_count
 
 TEACHER_EDITABLE_FIELDS = frozenset({"description"})
 
@@ -204,6 +206,14 @@ def update_course(db: Session, course_id: int, data: CourseUpdate, user: User) -
 
     if "code" in changes:
         _ensure_code_free(db, changes["code"], exclude_id=course.id)
+    if "capacity" in changes:
+        busiest = busiest_semester_count(db, course.id)
+        if changes["capacity"] < busiest:
+            raise _http(
+                status.HTTP_409_CONFLICT,
+                f"Capacity can't be lower than the {busiest} students already enrolled "
+                f"in {course.code} in one semester (BR-5)",
+            )
     if "department_id" in changes or "teacher_id" in changes:
         department = _require_department(db, changes.get("department_id", course.department_id))
         _check_teacher(db, changes.get("teacher_id", course.teacher_id), department)

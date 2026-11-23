@@ -48,3 +48,15 @@ class CourseBrief(BaseModel):
     title: str
     credits: int
     teacher_id: int | None
+
+
+class StudentBrief(BaseModel):
+    """A student's number and name only, used inside other resources (e.g. an
+    enrollment). Contains no contact details."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    student_no: str
+    first_name: str
+    last_name: str
