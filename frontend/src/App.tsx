@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router';
 
 import { AppRoutes } from './AppRoutes';
 import { AuthProvider } from './auth/AuthProvider';
+import { ToastProvider } from './components/ToastProvider';
 import { createQueryClient } from './lib/queryClient';
 
 function App() {
@@ -11,9 +12,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+        <ToastProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

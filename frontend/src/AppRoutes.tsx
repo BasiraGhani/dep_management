@@ -4,6 +4,7 @@ import { PAGE_ACCESS } from './auth/access';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import { RoleGate } from './auth/RoleGate';
 import { ComingSoon } from './components/ComingSoon';
+import { Layout } from './components/Layout';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -18,31 +19,33 @@ export function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route index element={<DashboardPage />} />
+        <Route element={<Layout />}>
+          <Route index element={<DashboardPage />} />
 
-        <Route path="departments" element={<ComingSoon title="Departments" task="T6.1" />} />
-        <Route path="departments/:id" element={<ComingSoon title="Department" task="T6.1" />} />
-        <Route path="teachers" element={<ComingSoon title="Teachers" task="T6.2" />} />
-        <Route path="teachers/:id" element={<ComingSoon title="Teacher" task="T6.2" />} />
-        <Route path="courses" element={<ComingSoon title="Courses" task="T6.4" />} />
-        <Route path="courses/:id" element={<ComingSoon title="Course" task="T6.4" />} />
-        <Route path="profile" element={<ComingSoon title="My profile" task="T7.3" />} />
+          <Route path="departments" element={<ComingSoon title="Departments" task="T6.1" />} />
+          <Route path="departments/:id" element={<ComingSoon title="Department" task="T6.1" />} />
+          <Route path="teachers" element={<ComingSoon title="Teachers" task="T6.2" />} />
+          <Route path="teachers/:id" element={<ComingSoon title="Teacher" task="T6.2" />} />
+          <Route path="courses" element={<ComingSoon title="Courses" task="T6.4" />} />
+          <Route path="courses/:id" element={<ComingSoon title="Course" task="T6.4" />} />
+          <Route path="profile" element={<ComingSoon title="My profile" task="T7.3" />} />
 
-        <Route element={<RoleGate roles={PAGE_ACCESS.students} />}>
-          <Route path="students" element={<ComingSoon title="Students" task="T6.3" />} />
-          <Route path="students/:id" element={<ComingSoon title="Student" task="T6.3" />} />
-        </Route>
-        <Route element={<RoleGate roles={PAGE_ACCESS.gradeEntry} />}>
-          <Route
-            path="courses/:id/grades"
-            element={<ComingSoon title="Grade entry" task="T7.2" />}
-          />
-        </Route>
-        <Route element={<RoleGate roles={PAGE_ACCESS.users} />}>
-          <Route path="users" element={<ComingSoon title="User management" task="T7.3" />} />
-        </Route>
+          <Route element={<RoleGate roles={PAGE_ACCESS.students} />}>
+            <Route path="students" element={<ComingSoon title="Students" task="T6.3" />} />
+            <Route path="students/:id" element={<ComingSoon title="Student" task="T6.3" />} />
+          </Route>
+          <Route element={<RoleGate roles={PAGE_ACCESS.gradeEntry} />}>
+            <Route
+              path="courses/:id/grades"
+              element={<ComingSoon title="Grade entry" task="T7.2" />}
+            />
+          </Route>
+          <Route element={<RoleGate roles={PAGE_ACCESS.users} />}>
+            <Route path="users" element={<ComingSoon title="User management" task="T7.3" />} />
+          </Route>
 
-        <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
       </Route>
     </Routes>
   );
