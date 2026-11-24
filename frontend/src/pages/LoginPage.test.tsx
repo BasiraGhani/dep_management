@@ -67,6 +67,20 @@ describe('LoginPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Account is deactivated');
   });
 
+  it('shows the wait after too many failed attempts (429)', async () => {
+    vi.mocked(login).mockRejectedValue(
+      apiError(429, 'Too many failed login attempts. Try again in 15 minute(s).'),
+    );
+    renderApp('/login');
+
+    await submit('demo.teacher', 'demo-password');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Too many failed login attempts. Try again in 15 minute(s).',
+    );
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeEnabled();
+  });
+
   it('explains when the server cannot be reached', async () => {
     vi.mocked(login).mockRejectedValue(networkError);
     renderApp('/login');

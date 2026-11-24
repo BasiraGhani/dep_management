@@ -96,6 +96,13 @@ def test_seed_admin_rejects_a_short_password(session: Session) -> None:
         seed_admin(session, admin_settings(password="short"))
 
 
+@pytest.mark.parametrize("password", ["change-me", "Change-Me-Too", "my-change-me-pass"])
+def test_seed_admin_refuses_the_example_password(session: Session, password: str) -> None:
+    with pytest.raises(SeedError, match="still the example value"):
+        seed_admin(session, admin_settings(password=password))
+    assert counts(session)["users"] == 0
+
+
 def test_seed_admin_refuses_to_reuse_a_non_admin_username(
     session: Session, factory: Factory
 ) -> None:

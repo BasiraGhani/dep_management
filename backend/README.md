@@ -9,7 +9,7 @@ cd backend
 python3.12 -m venv .venv          # must be Python 3.12+
 source .venv/bin/activate
 pip install -r requirements-dev.txt
-cp .env.example .env              # then set SECRET_KEY
+cp .env.example .env              # then set SECRET_KEY and FIRST_ADMIN_PASSWORD
 alembic upgrade head              # create / update the database schema
 ```
 

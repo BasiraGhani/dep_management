@@ -8,6 +8,11 @@ from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 
+def is_placeholder(value: str) -> bool:
+    """True for the "change-me" example values in the .env.example files."""
+    return "change-me" in value.lower()
+
+
 class Settings(BaseSettings):
     """Application settings, read from environment variables and `backend/.env`.
 
@@ -35,6 +40,22 @@ class Settings(BaseSettings):
         """Accept a comma-separated string, e.g. `http://a.com,http://b.com`."""
         if isinstance(value, str):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
+
+    @field_validator("cors_origins")
+    @classmethod
+    def no_wildcard_origin(cls, value: list[str]) -> list[str]:
+        """NFR-1: CORS is limited to the frontend's origin(s), never "*"."""
+        if "*" in value:
+            raise ValueError("CORS_ORIGINS must list the frontend origin(s), not '*'")
+        return value
+
+    @field_validator("secret_key")
+    @classmethod
+    def not_a_placeholder(cls, value: str) -> str:
+        """Refuse the example value from .env.example: it isn't secret."""
+        if is_placeholder(value):
+            raise ValueError("SECRET_KEY is still the example value; generate a real one")
         return value
 
 

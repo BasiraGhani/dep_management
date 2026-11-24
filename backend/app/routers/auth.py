@@ -1,6 +1,6 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.deps import CurrentUser, DbSession
@@ -21,11 +21,20 @@ UNAUTHORIZED: dict[int | str, dict[str, Any]] = {
     responses={
         status.HTTP_401_UNAUTHORIZED: {"description": "Incorrect username or password"},
         status.HTTP_403_FORBIDDEN: {"description": "Account is deactivated"},
+        status.HTTP_429_TOO_MANY_REQUESTS: {
+            "description": "Too many failed logins from this client; see Retry-After"
+        },
     },
 )
-def login(db: DbSession, form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
-    """Log in with username and password (form fields) and get a bearer token."""
-    user = auth_service.authenticate(db, form.username, form.password)
+def login(
+    request: Request, db: DbSession, form: Annotated[OAuth2PasswordRequestForm, Depends()]
+) -> Token:
+    """Log in with username and password (form fields) and get a bearer token.
+
+    Repeated failures from one client are throttled (429 with Retry-After).
+    """
+    client = request.client.host if request.client else "unknown"
+    user = auth_service.authenticate(db, form.username, form.password, client)
     return Token(access_token=auth_service.issue_token(user))
 
 

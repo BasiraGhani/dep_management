@@ -15,5 +15,6 @@ if [ "${SEED_DEMO:-false}" = "true" ]; then
   python -m app.cli seed-demo
 fi
 
-# Nginx in front sets the X-Forwarded-* headers.
+# Nginx in front sets X-Forwarded-For to the real client address (replacing any
+# value the client sent); the backend is only reachable through it in compose.
 exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'
