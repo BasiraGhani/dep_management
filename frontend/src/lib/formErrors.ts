@@ -8,11 +8,13 @@ import type { ApiErrorBody } from '../types';
  * Show a failed save in the form: field errors from a 422 go under their fields,
  * a message that names one of `fields` (e.g. "A department with code 'CS' already
  * exists") goes under that field, and anything else goes to the form's root error.
+ * `aliases` maps other wordings to a field, e.g. { 'student number': 'student_no' }.
  */
 export function applyServerErrors<T extends FieldValues>(
   error: unknown,
   setError: UseFormSetError<T>,
   fields: readonly Path<T>[],
+  aliases: Readonly<Record<string, Path<T>>> = {},
 ): void {
   const detail =
     error instanceof AxiosError
@@ -34,6 +36,11 @@ export function applyServerErrors<T extends FieldValues>(
   const message = errorMessage(error, 'Could not save. Please try again.');
   if (typeof detail === 'string') {
     const lower = detail.toLowerCase();
+    const aliased = Object.entries(aliases).find(([words]) => lower.includes(words));
+    if (aliased) {
+      setError(aliased[1], { type: 'server', message });
+      return;
+    }
     const named = fields.find((field) =>
       [field, field.replace(/_id$/, ''), field.replace(/_/g, ' ')].some((word) =>
         new RegExp(`\\b${word}\\b`).test(lower),

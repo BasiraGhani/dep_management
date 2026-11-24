@@ -6,7 +6,16 @@ import { useDepartmentsQuery } from '../../hooks/useDepartments';
 import { useCreateTeacher, useUpdateTeacher } from '../../hooks/useTeachers';
 import { applyServerErrors, emptyToNull } from '../../lib/formErrors';
 import { TITLE_LABEL } from '../../lib/labels';
+import {
+  accountFields,
+  checkAccount,
+  email,
+  optionalPastDate,
+  optionalPhone,
+  personName,
+} from '../../lib/validation';
 import type { TeacherCreate, TeacherOut, TeacherTitle, TeacherUpdate } from '../../types';
+import { AccountFields } from '../AccountFields';
 import { FormField, inputClass } from '../FormField';
 import { Modal } from '../Modal';
 import { useToast } from '../useToast';
@@ -20,42 +29,19 @@ import { useToast } from '../useToast';
 export type TeacherFormMode = 'admin' | 'hod' | 'self';
 
 const TITLES = Object.keys(TITLE_LABEL) as TeacherTitle[];
-const today = () => new Date().toISOString().slice(0, 10);
 
 const schema = z
   .object({
-    first_name: z.string().trim().min(1, 'Enter a first name').max(60, 'At most 60 characters'),
-    last_name: z.string().trim().min(1, 'Enter a last name').max(60, 'At most 60 characters'),
-    email: z
-      .string()
-      .trim()
-      .min(1, 'Enter an email')
-      .max(120, 'At most 120 characters')
-      .regex(/^[^@\s]+@[^@\s]+\.[^@\s]+$/, 'Enter a valid email'),
-    phone: z
-      .string()
-      .trim()
-      .refine((v) => v === '' || /^\+?[0-9()\- ]{3,30}$/.test(v), 'Digits, spaces, + ( ) - only'),
+    first_name: personName('first name'),
+    last_name: personName('last name'),
+    email,
+    phone: optionalPhone,
     title: z.enum(TITLES as [TeacherTitle, ...TeacherTitle[]]),
     department_id: z.string().min(1, 'Choose a department'),
-    hire_date: z.string().refine((v) => v === '' || v <= today(), "Can't be in the future"),
-    create_account: z.boolean(),
-    username: z.string().trim(),
-    temp_password: z.string(),
+    hire_date: optionalPastDate,
+    ...accountFields,
   })
-  .superRefine((v, ctx) => {
-    if (!v.create_account) return;
-    if (!/^[A-Za-z0-9._-]{3,50}$/.test(v.username)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['username'],
-        message: '3–50 letters, digits, dots, dashes or underscores',
-      });
-    }
-    if (v.temp_password.length < 8 || v.temp_password.length > 128) {
-      ctx.addIssue({ code: 'custom', path: ['temp_password'], message: 'At least 8 characters' });
-    }
-  });
+  .superRefine(checkAccount);
 
 type FormValues = z.infer<typeof schema>;
 const FIELDS = [
@@ -274,43 +260,12 @@ export function TeacherFormModal({
         )}
 
         {!editing && (
-          <fieldset className="space-y-3 rounded border border-slate-200 p-3">
-            <legend className="px-1 text-sm font-medium text-slate-700">Login account</legend>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" {...register('create_account')} />
-              Create a login account for this teacher
-            </label>
-            {wantsAccount && (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField label="Username" required error={errors.username?.message}>
-                  {(p) => (
-                    <input
-                      {...p}
-                      autoComplete="off"
-                      {...register('username')}
-                      className={inputClass}
-                    />
-                  )}
-                </FormField>
-                <FormField
-                  label="Temporary password"
-                  required
-                  error={errors.temp_password?.message}
-                  hint="Give this to the teacher; they can change it on their profile."
-                >
-                  {(p) => (
-                    <input
-                      {...p}
-                      type="password"
-                      autoComplete="new-password"
-                      {...register('temp_password')}
-                      className={inputClass}
-                    />
-                  )}
-                </FormField>
-              </div>
-            )}
-          </fieldset>
+          <AccountFields
+            who="teacher"
+            register={register}
+            errors={errors}
+            wantsAccount={wantsAccount}
+          />
         )}
       </form>
     </Modal>

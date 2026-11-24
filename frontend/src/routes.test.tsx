@@ -4,18 +4,27 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getMe, login } from './api/auth';
 import { getDepartment, listDepartments } from './api/departments';
+import { getStudent, listStudents } from './api/students';
 import { getTeacher, listTeachers } from './api/teachers';
 import { browser } from './api/browser';
 import { api } from './api/client';
 import { clearToken, getToken, setToken } from './auth/token';
 import { stubApi } from './test/apiStub';
-import { csDepartment, csDepartmentDetail, csTeachers, kayDetail, meFor } from './test/fixtures';
+import {
+  amiraDetail,
+  csDepartment,
+  csDepartmentDetail,
+  csTeachers,
+  kayDetail,
+  meFor,
+} from './test/fixtures';
 import { renderApp } from './test/render';
 import type { UserRole } from './types';
 
 vi.mock('./api/auth', () => ({ login: vi.fn(), getMe: vi.fn(), changePassword: vi.fn() }));
 vi.mock('./api/departments');
 vi.mock('./api/teachers');
+vi.mock('./api/students');
 
 /**
  * ARCHITECTURE §4, copied here on purpose (not imported from auth/access.ts), so a
@@ -28,7 +37,7 @@ const ROUTES: [path: string, heading: string, roles: UserRole[]][] = [
   ['/teachers', 'Teachers', ['admin', 'hod', 'teacher', 'student']],
   ['/teachers/3', 'Alan Kay', ['admin', 'hod', 'teacher', 'student']],
   ['/students', 'Students', ['admin', 'hod', 'teacher']],
-  ['/students/3', 'Student #3', ['admin', 'hod', 'teacher']],
+  ['/students/3', 'Amira Costa', ['admin', 'hod', 'teacher']],
   ['/courses', 'Courses', ['admin', 'hod', 'teacher', 'student']],
   ['/courses/3', 'Course #3', ['admin', 'hod', 'teacher', 'student']],
   ['/courses/3/grades', 'Grade entry #3', ['admin', 'hod', 'teacher']],
@@ -43,6 +52,8 @@ beforeEach(() => {
   vi.mocked(getDepartment).mockResolvedValue(csDepartmentDetail);
   vi.mocked(listTeachers).mockResolvedValue(csTeachers);
   vi.mocked(getTeacher).mockResolvedValue(kayDetail);
+  vi.mocked(getStudent).mockResolvedValue(amiraDetail);
+  vi.mocked(listStudents).mockResolvedValue({ items: [amiraDetail], total: 1 });
 });
 afterEach(() => {
   vi.restoreAllMocks();
