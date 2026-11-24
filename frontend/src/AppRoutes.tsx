@@ -10,6 +10,8 @@ import { DepartmentDetailPage } from './pages/DepartmentDetailPage';
 import { DepartmentsPage } from './pages/DepartmentsPage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { StudentDetailPage } from './pages/StudentDetailPage';
+import { StudentsPage } from './pages/StudentsPage';
 import { TeacherDetailPage } from './pages/TeacherDetailPage';
 import { TeachersPage } from './pages/TeachersPage';
 
@@ -35,8 +37,8 @@ export function AppRoutes() {
           <Route path="profile" element={<ComingSoon title="My profile" task="T7.3" />} />
 
           <Route element={<RoleGate roles={PAGE_ACCESS.students} />}>
-            <Route path="students" element={<ComingSoon title="Students" task="T6.3" />} />
-            <Route path="students/:id" element={<ComingSoon title="Student" task="T6.3" />} />
+            <Route path="students" element={<StudentsPage />} />
+            <Route path="students/:id" element={<StudentDetailPage />} />
           </Route>
           <Route element={<RoleGate roles={PAGE_ACCESS.gradeEntry} />}>
             <Route

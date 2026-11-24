@@ -132,3 +132,36 @@ export const kayDetail = {
   courses: [{ id: 11, code: 'CS101', title: 'Programming', credits: 4, teacher_id: 2 }],
   user_id: 10,
 };
+
+/** GET /students/1 (Amira Costa, CS, 2 enrollments, one graded). */
+export const amiraDetail = {
+  id: 1,
+  student_no: 'CS2026001',
+  first_name: 'Amira',
+  last_name: 'Costa',
+  email: 'amira@student.uni.example',
+  phone: '555-0110',
+  date_of_birth: '2006-01-01',
+  department_id: 3,
+  year: 1,
+  status: 'active' as const,
+  enrollment_date: '2026-09-01',
+  created_at: '2026-09-01T10:00:00Z',
+  updated_at: '2026-09-01T10:00:00Z',
+  enrollments: [
+    {
+      id: 101,
+      semester: '2026-Spring',
+      grade: 'A' as const,
+      course: { id: 11, code: 'CS101', title: 'Programming', credits: 4, teacher_id: 2 },
+    },
+    {
+      id: 102,
+      semester: '2026-Fall',
+      grade: null,
+      course: { id: 12, code: 'CS201', title: 'Data Structures', credits: 4, teacher_id: 5 },
+    },
+  ],
+  gpa: 4.0,
+  user_id: 4,
+};
