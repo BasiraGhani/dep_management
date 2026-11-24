@@ -4,7 +4,8 @@ import { Link } from 'react-router';
 import { useRole } from '../auth/useRole';
 import { DataTable, type Column } from '../components/DataTable';
 import { ErrorMessage } from '../components/ErrorMessage';
-import { inputClass } from '../components/FormField';
+import { ExportCsvButton } from '../components/ExportCsvButton';
+import { filterClass } from '../components/FormField';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { SearchInput } from '../components/SearchInput';
 import { StudentFormModal } from '../components/students/StudentFormModal';
@@ -34,7 +35,7 @@ function Filter(props: {
         onChange={(e) => {
           props.onChange(e.target.value);
         }}
-        className={`${inputClass} w-auto`}
+        className={filterClass}
       >
         {props.options.map(([value, label]) => (
           <option key={value} value={value}>
@@ -55,14 +56,13 @@ export function StudentsPage() {
   const [skip, setSkip] = useState(0);
   const [creating, setCreating] = useState(false);
   const departments = useDepartmentsQuery({ limit: 100 });
-  const query = useStudentsQuery({
+  const filters = {
     search: search || undefined,
     department_id: departmentId ? Number(departmentId) : undefined,
     year: year ? Number(year) : undefined,
     status: (status || undefined) as StudentStatus | undefined,
-    skip,
-    limit: PAGE_SIZE,
-  });
+  };
+  const query = useStudentsQuery({ ...filters, skip, limit: PAGE_SIZE });
   const canCreate = isAdmin || role === 'hod';
   const filtering = Boolean(search || departmentId || year || status);
 
@@ -99,17 +99,20 @@ export function StudentsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-slate-800">Students</h1>
-        {canCreate && (
-          <button
-            type="button"
-            onClick={() => {
-              setCreating(true);
-            }}
-            className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
-          >
-            New student
-          </button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <ExportCsvButton resource="students" filters={filters} />
+          {canCreate && (
+            <button
+              type="button"
+              onClick={() => {
+                setCreating(true);
+              }}
+              className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+            >
+              New student
+            </button>
+          )}
+        </div>
       </div>
       {role === 'teacher' && (
         <p className="text-sm text-slate-500">Showing students enrolled in your courses.</p>

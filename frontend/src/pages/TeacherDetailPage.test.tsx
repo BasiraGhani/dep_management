@@ -79,7 +79,7 @@ describe('TeacherDetailPage', () => {
     vi.mocked(getTeacher).mockResolvedValue({ ...kayDetail, courses: [], user_id: null });
     renderApp('/teachers/2');
 
-    expect(await screen.findByText('Not teaching any courses.')).toBeInTheDocument();
+    expect(await screen.findByText('Not teaching any courses yet.')).toBeInTheDocument();
     expect(screen.getByText('No account')).toBeInTheDocument();
   });
 

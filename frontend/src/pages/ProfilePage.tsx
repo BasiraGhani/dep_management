@@ -17,7 +17,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
       <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className="text-slate-800">{children}</dd>
+      <dd className="text-slate-800 wrap-anywhere">{children}</dd>
     </div>
   );
 }

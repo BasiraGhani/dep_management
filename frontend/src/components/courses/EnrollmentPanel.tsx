@@ -4,10 +4,11 @@ import { useEnroll } from '../../hooks/useEnrollments';
 import { useStudentsQuery } from '../../hooks/useStudents';
 import { errorMessage } from '../../api/client';
 import type { CourseDetailOut } from '../../types';
-import { inputClass } from '../FormField';
+import { filterClass } from '../FormField';
 import { LoadingSpinner } from '../LoadingSpinner';
 import { SearchInput } from '../SearchInput';
 import { useToast } from '../useToast';
+import { EmptyState } from '../EmptyState';
 
 interface EnrollmentPanelProps {
   course: CourseDetailOut;
@@ -67,7 +68,7 @@ export function EnrollmentPanel({
               setProblem(null);
               onSemesterChange(e.target.value);
             }}
-            className={`${inputClass} w-auto`}
+            className={filterClass}
           >
             {semesters.map((s) => (
               <option key={s} value={s}>
@@ -77,7 +78,7 @@ export function EnrollmentPanel({
           </select>
           <p
             aria-live="polite"
-            className={`text-sm font-medium ${full ? 'text-red-700' : 'text-slate-700'}`}
+            className={`text-sm font-medium whitespace-nowrap ${full ? 'text-red-700' : 'text-slate-700'}`}
           >
             <span className="sr-only">Enrolled for {semester}: </span>
             {inSemester.length} / {course.capacity}
@@ -109,7 +110,7 @@ export function EnrollmentPanel({
           {errorMessage(students.error)}
         </p>
       ) : students.data.items.length === 0 ? (
-        <p className="text-sm text-slate-500">No active students match.</p>
+        <EmptyState>No active students match this search.</EmptyState>
       ) : (
         <ul aria-label="Matching students" className="divide-y rounded border">
           {students.data.items.map((s) => {

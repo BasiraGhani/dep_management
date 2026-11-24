@@ -256,7 +256,7 @@ describe('student dashboard (FR-7.4)', () => {
     });
     open(meFor('student'));
 
-    expect(await screen.findByText("You aren't enrolled in any course yet.")).toBeInTheDocument();
+    expect(await screen.findByText("You aren't enrolled in any courses yet.")).toBeInTheDocument();
     expect(screen.queryByText(/Your GPA appears/)).not.toBeInTheDocument();
   });
 });

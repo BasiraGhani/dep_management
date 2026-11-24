@@ -15,6 +15,7 @@ import { useUnenroll } from '../hooks/useEnrollments';
 import { TITLE_LABEL } from '../lib/labels';
 import { compareSemesters, currentSemester, semesterOptions } from '../lib/semesters';
 import type { RosterEntry } from '../types';
+import { EmptyState } from '../components/EmptyState';
 
 export function CourseDetailPage() {
   const id = Number(useParams().id);
@@ -168,7 +169,7 @@ export function CourseDetailPage() {
             Enrolled students ({course.roster.length})
           </h2>
           {course.roster.length === 0 ? (
-            <p className="text-slate-500">No students enrolled yet.</p>
+            <EmptyState>No students enrolled yet.</EmptyState>
           ) : (
             <div className="overflow-x-auto rounded-lg border bg-white">
               <table className="min-w-full divide-y text-sm">

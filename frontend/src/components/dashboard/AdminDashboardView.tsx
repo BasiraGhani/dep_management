@@ -5,6 +5,7 @@ import type { AdminDashboard, HodDashboard } from '../../types';
 import { LoadingSpinner } from '../LoadingSpinner';
 import { RecentEnrollments } from './RecentEnrollments';
 import { StatCard, StatGrid } from './StatCard';
+import { EmptyState } from '../EmptyState';
 
 // Recharts is large and only admins and HODs see a chart: load it on demand.
 const StudentsPerDepartmentChart = lazy(() =>
@@ -15,9 +16,9 @@ const StudentsPerDepartmentChart = lazy(() =>
 export function AdminDashboardView({ data }: { data: AdminDashboard | HodDashboard }) {
   if (data.role === 'hod' && data.department === null) {
     return (
-      <p className="rounded-lg border bg-white p-4 text-slate-600">
+      <EmptyState boxed>
         You don't head a department at the moment, so there are no department figures to show.
-      </p>
+      </EmptyState>
     );
   }
   const { totals } = data;

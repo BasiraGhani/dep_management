@@ -189,7 +189,9 @@ describe('picker', () => {
   it('says when no active student matches', async () => {
     vi.mocked(listStudents).mockResolvedValue({ items: [], total: 0 });
     const { panel } = await openAsAdmin();
-    expect(await within(panel).findByText('No active students match.')).toBeInTheDocument();
+    expect(
+      await within(panel).findByText('No active students match this search.'),
+    ).toBeInTheDocument();
   });
 
   it('enrolls a student for the selected semester and refreshes the roster', async () => {

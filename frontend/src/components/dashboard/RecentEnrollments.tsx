@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 
 import type { EnrollmentOut } from '../../types';
+import { EmptyState } from '../EmptyState';
 
 /** FR-7.1: the latest enrollments, newest first (the backend sends at most 10). */
 export function RecentEnrollments({ enrollments }: { enrollments: EnrollmentOut[] }) {
@@ -10,7 +11,7 @@ export function RecentEnrollments({ enrollments }: { enrollments: EnrollmentOut[
         Recent enrollments
       </h2>
       {enrollments.length === 0 ? (
-        <p className="text-slate-500">No enrollments yet.</p>
+        <EmptyState>No enrollments yet.</EmptyState>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y text-sm">

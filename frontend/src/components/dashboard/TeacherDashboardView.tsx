@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 
 import type { TeacherDashboard } from '../../types';
 import { StatCard, StatGrid } from './StatCard';
+import { EmptyState } from '../EmptyState';
 
 /** FR-7.3: the teacher's courses with enrolled and ungraded counts (all semesters). */
 export function TeacherDashboardView({ data }: { data: TeacherDashboard }) {
@@ -19,7 +20,7 @@ export function TeacherDashboardView({ data }: { data: TeacherDashboard }) {
           My courses
         </h2>
         {data.courses.length === 0 ? (
-          <p className="text-slate-500">You aren't teaching any courses yet.</p>
+          <EmptyState>You aren't teaching any courses yet.</EmptyState>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y text-sm">

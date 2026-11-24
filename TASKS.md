@@ -277,7 +277,7 @@ References: **FR/BR/NFR** → `docs/REQUIREMENTS.md` · **§** → `docs/ARCHITE
   - [ ] FR-1.6 and FR-8 are usable from the UI
   - [ ] Component tests
 
-### [ ] T7.4 CSV export buttons and UX polish
+### [~] T7.4 CSV export buttons and UX polish
 - **Depends on:** T7.1–T7.3
 - **Do:** Add "Export CSV" buttons to the students, teachers and courses lists (using the current filters). Check the layout on tablet width, make sure every form has labels and is accessible, and use consistent empty states.
 - **Acceptance:**

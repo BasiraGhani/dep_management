@@ -4,7 +4,8 @@ import { Link } from 'react-router';
 import { useRole } from '../auth/useRole';
 import { DataTable, type Column } from '../components/DataTable';
 import { ErrorMessage } from '../components/ErrorMessage';
-import { inputClass } from '../components/FormField';
+import { ExportCsvButton } from '../components/ExportCsvButton';
+import { filterClass } from '../components/FormField';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { SearchInput } from '../components/SearchInput';
 import { TeacherFormModal } from '../components/teachers/TeacherFormModal';
@@ -24,13 +25,12 @@ export function TeachersPage() {
   const [skip, setSkip] = useState(0);
   const [creating, setCreating] = useState(false);
   const departments = useDepartmentsQuery({ limit: 100 });
-  const query = useTeachersQuery({
+  const filters = {
     search: search || undefined,
     department_id: departmentId ? Number(departmentId) : undefined,
     title: (title || undefined) as TeacherTitle | undefined,
-    skip,
-    limit: PAGE_SIZE,
-  });
+  };
+  const query = useTeachersQuery({ ...filters, skip, limit: PAGE_SIZE });
   const canCreate = isAdmin || role === 'hod';
 
   const columns = useMemo(() => {
@@ -69,17 +69,20 @@ export function TeachersPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-slate-800">Teachers</h1>
-        {canCreate && (
-          <button
-            type="button"
-            onClick={() => {
-              setCreating(true);
-            }}
-            className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
-          >
-            New teacher
-          </button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <ExportCsvButton resource="teachers" filters={filters} />
+          {canCreate && (
+            <button
+              type="button"
+              onClick={() => {
+                setCreating(true);
+              }}
+              className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+            >
+              New teacher
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -101,7 +104,7 @@ export function TeachersPage() {
             setDepartmentId(e.target.value);
             setSkip(0);
           }}
-          className={`${inputClass} w-auto`}
+          className={filterClass}
         >
           <option value="">All departments</option>
           {departments.data?.items.map((d) => (
@@ -120,7 +123,7 @@ export function TeachersPage() {
             setTitle(e.target.value);
             setSkip(0);
           }}
-          className={`${inputClass} w-auto`}
+          className={filterClass}
         >
           <option value="">All titles</option>
           {TITLES.map((t) => (
