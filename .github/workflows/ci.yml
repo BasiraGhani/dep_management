@@ -138,7 +138,9 @@ jobs:
           ENV
 
       - name: Build and start (db, backend, frontend)
-        run: docker compose up --build --detach --wait --wait-timeout 300
+        run: |
+          docker compose up --build --detach --wait --wait-timeout 300 2>&1 | tee compose-up.log
+          test "${PIPESTATUS[0]}" -eq 0
 
       - name: Smoke test at http://localhost
         run: |
@@ -168,7 +170,20 @@ jobs:
 
       - name: Logs
         if: failure()
-        run: docker compose logs --no-color
+        # Also published as annotations, so the cause shows on the PR's checks page.
+        run: |
+          {
+            echo "== docker compose up (last lines)"; tail -n 30 compose-up.log 2>/dev/null || true
+            echo "== docker compose ps"; docker compose ps --all
+            for service in db backend frontend; do
+              echo "== $service logs (last lines)"; docker compose logs --no-color --tail 25 "$service"
+            done
+          } > diagnostics.txt 2>&1
+          cat diagnostics.txt
+          split -l 40 diagnostics.txt part-
+          for part in part-*; do
+            echo "::error title=Docker stack diagnostics ($part)::$(sed 's/%/%25/g' "$part" | awk '{printf "%s%%0A", $0}')"
+          done
 
       - name: Stop
         if: always()
