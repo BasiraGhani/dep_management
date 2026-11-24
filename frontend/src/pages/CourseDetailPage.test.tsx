@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getMe } from '../api/auth';
 import { deleteCourse, getCourse, listCourses, updateCourse } from '../api/courses';
 import { getDepartment, listDepartments } from '../api/departments';
+import { listStudents } from '../api/students';
 import { listTeachers } from '../api/teachers';
 import { clearToken, setToken } from '../auth/token';
 import {
@@ -23,6 +24,8 @@ vi.mock('../api/auth', () => ({ login: vi.fn(), getMe: vi.fn(), changePassword: 
 vi.mock('../api/courses');
 vi.mock('../api/departments');
 vi.mock('../api/teachers');
+vi.mock('../api/students');
+vi.mock('../api/enrollments');
 
 const hodOf = (departmentId: number): CurrentUserOut => ({
   ...meFor('hod'),
@@ -40,6 +43,7 @@ beforeEach(() => {
   vi.mocked(listDepartments).mockResolvedValue({ items: [csDepartment], total: 1 });
   vi.mocked(listTeachers).mockResolvedValue(csTeachers);
   vi.mocked(listCourses).mockResolvedValue({ items: [], total: 0 });
+  vi.mocked(listStudents).mockResolvedValue({ items: [], total: 0 });
 });
 afterEach(() => {
   vi.clearAllMocks();

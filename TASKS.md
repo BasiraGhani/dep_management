@@ -244,7 +244,7 @@ References: **FR/BR/NFR** → `docs/REQUIREMENTS.md` · **§** → `docs/ARCHITE
   - [ ] Changing the department in the form resets the teacher choice
   - [ ] Component tests
 
-### [ ] T6.5 Enrollment management
+### [~] T6.5 Enrollment management
 - **Depends on:** T6.3, T6.4
 - **Do:** On the course detail page, add an "Enroll student" picker (search for active students) with a semester selector, plus unenroll. Show capacity as "28 / 40".
 - **Acceptance:**
