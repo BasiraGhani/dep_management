@@ -54,6 +54,11 @@ export function FormField({ label, error, hint, required, children }: FormFieldP
   );
 }
 
+const fieldLook =
+  'rounded border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none aria-[invalid=true]:border-red-500';
+
 /** Tailwind classes for text inputs and selects inside a FormField. */
-export const inputClass =
-  'w-full rounded border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none aria-[invalid=true]:border-red-500';
+export const inputClass = `w-full ${fieldLook}`;
+
+/** Filter selects above a list: full width on phones, side by side from tablet width up. */
+export const filterClass = `w-full sm:w-auto ${fieldLook}`;

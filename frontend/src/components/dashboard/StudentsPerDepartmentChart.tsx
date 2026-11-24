@@ -1,6 +1,7 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import type { DepartmentStudents } from '../../types';
+import { EmptyState } from '../EmptyState';
 
 /**
  * FR-7.1 bar chart. The chart is drawn for sighted users; the same figures are
@@ -13,7 +14,7 @@ export function StudentsPerDepartmentChart({ data }: { data: DepartmentStudents[
         Students per department
       </h2>
       {data.length === 0 ? (
-        <p className="text-slate-500">No departments yet.</p>
+        <EmptyState>No departments yet.</EmptyState>
       ) : (
         <>
           <div className="h-64" aria-hidden="true">

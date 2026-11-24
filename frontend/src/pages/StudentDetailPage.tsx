@@ -11,12 +11,13 @@ import { useToast } from '../components/useToast';
 import { useDepartmentQuery } from '../hooks/useDepartments';
 import { useDeleteStudent, useStudentQuery } from '../hooks/useStudents';
 import { STATUS_LABEL } from '../lib/labels';
+import { EmptyState } from '../components/EmptyState';
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
       <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className="text-slate-800">{children}</dd>
+      <dd className="text-slate-800 wrap-anywhere">{children}</dd>
     </div>
   );
 }
@@ -131,7 +132,7 @@ export function StudentDetailPage() {
           </p>
         </div>
         {enrollmentCount === 0 ? (
-          <p className="text-slate-500">Not enrolled in any course.</p>
+          <EmptyState>Not enrolled in any courses yet.</EmptyState>
         ) : (
           <div className="overflow-x-auto rounded-lg border bg-white">
             <table className="min-w-full divide-y text-sm">

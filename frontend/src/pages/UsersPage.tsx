@@ -7,7 +7,7 @@ import { useAuth } from '../auth/useAuth';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DataTable, type Column } from '../components/DataTable';
 import { ErrorMessage } from '../components/ErrorMessage';
-import { inputClass } from '../components/FormField';
+import { filterClass } from '../components/FormField';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { SearchInput } from '../components/SearchInput';
 import { TemporaryPasswordDialog } from '../components/users/TemporaryPasswordDialog';
@@ -203,7 +203,7 @@ export function UsersPage() {
           onChange={(e) => {
             resetTo(setRole)(e.target.value);
           }}
-          className={`${inputClass} w-auto`}
+          className={filterClass}
         >
           <option value="">All roles</option>
           {ROLES.map((r) => (
@@ -221,7 +221,7 @@ export function UsersPage() {
           onChange={(e) => {
             resetTo(setActive)(e.target.value);
           }}
-          className={`${inputClass} w-auto`}
+          className={filterClass}
         >
           <option value="">All statuses</option>
           <option value="active">Active</option>

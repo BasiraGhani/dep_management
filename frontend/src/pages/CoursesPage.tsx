@@ -5,7 +5,8 @@ import { useRole } from '../auth/useRole';
 import { CourseFormModal } from '../components/courses/CourseFormModal';
 import { DataTable, type Column } from '../components/DataTable';
 import { ErrorMessage } from '../components/ErrorMessage';
-import { inputClass } from '../components/FormField';
+import { ExportCsvButton } from '../components/ExportCsvButton';
+import { filterClass } from '../components/FormField';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { SearchInput } from '../components/SearchInput';
 import { useCoursesQuery } from '../hooks/useCourses';
@@ -29,13 +30,12 @@ export function CoursesPage() {
     limit: 100,
   });
   const allTeachers = useTeachersQuery({ limit: 100 });
-  const query = useCoursesQuery({
+  const filters = {
     search: search || undefined,
     department_id: departmentId ? Number(departmentId) : undefined,
     teacher_id: teacherId ? Number(teacherId) : undefined,
-    skip,
-    limit: PAGE_SIZE,
-  });
+  };
+  const query = useCoursesQuery({ ...filters, skip, limit: PAGE_SIZE });
   const canCreate = isAdmin || role === 'hod';
 
   const columns = useMemo<Column<CourseOut>[]>(() => {
@@ -73,17 +73,20 @@ export function CoursesPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-slate-800">Courses</h1>
-        {canCreate && (
-          <button
-            type="button"
-            onClick={() => {
-              setCreating(true);
-            }}
-            className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
-          >
-            New course
-          </button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <ExportCsvButton resource="courses" filters={filters} />
+          {canCreate && (
+            <button
+              type="button"
+              onClick={() => {
+                setCreating(true);
+              }}
+              className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+            >
+              New course
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -106,7 +109,7 @@ export function CoursesPage() {
             setTeacherId(''); // the chosen teacher may not be in the new department
             setSkip(0);
           }}
-          className={`${inputClass} w-auto`}
+          className={filterClass}
         >
           <option value="">All departments</option>
           {departments.data?.items.map((d) => (
@@ -125,7 +128,7 @@ export function CoursesPage() {
             setTeacherId(e.target.value);
             setSkip(0);
           }}
-          className={`${inputClass} w-auto`}
+          className={filterClass}
         >
           <option value="">All teachers</option>
           {teachers.data?.items.map((t) => (

@@ -12,6 +12,7 @@ import { useDepartmentQuery } from '../hooks/useDepartments';
 import { useDeleteTeacher, useTeacherQuery } from '../hooks/useTeachers';
 import { TITLE_LABEL } from '../lib/labels';
 import { isFullTeacher } from '../types';
+import { EmptyState } from '../components/EmptyState';
 
 export function TeacherDetailPage() {
   const id = Number(useParams().id);
@@ -134,7 +135,7 @@ export function TeacherDetailPage() {
           Courses taught
         </h2>
         {teacher.courses.length === 0 ? (
-          <p className="text-slate-500">Not teaching any courses.</p>
+          <EmptyState>Not teaching any courses yet.</EmptyState>
         ) : (
           <ul className="divide-y rounded-lg border bg-white">
             {teacher.courses.map((c) => (

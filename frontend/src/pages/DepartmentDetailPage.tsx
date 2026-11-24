@@ -11,6 +11,7 @@ import { useToast } from '../components/useToast';
 import { useDeleteDepartment, useDepartmentQuery } from '../hooks/useDepartments';
 import { useTeachersQuery } from '../hooks/useTeachers';
 import { TITLE_LABEL } from '../lib/labels';
+import { EmptyState } from '../components/EmptyState';
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
@@ -123,7 +124,7 @@ export function DepartmentDetailPage() {
             Courses
           </h2>
           {department.courses.length === 0 ? (
-            <p className="text-slate-500">No courses yet.</p>
+            <EmptyState>No courses yet.</EmptyState>
           ) : (
             <ul className="divide-y rounded-lg border bg-white">
               {department.courses.map((c) => (
@@ -147,7 +148,7 @@ export function DepartmentDetailPage() {
           ) : teachers.isError ? (
             <ErrorMessage error={teachers.error} onRetry={() => void teachers.refetch()} />
           ) : teachers.data.items.length === 0 ? (
-            <p className="text-slate-500">No teachers yet.</p>
+            <EmptyState>No teachers yet.</EmptyState>
           ) : (
             <ul className="divide-y rounded-lg border bg-white">
               {teachers.data.items.map((t) => (

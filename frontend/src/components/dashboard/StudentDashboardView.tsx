@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { compareSemesters } from '../../lib/semesters';
 import type { StudentDashboard } from '../../types';
 import { StatCard, StatGrid } from './StatCard';
+import { EmptyState } from '../EmptyState';
 
 /** FR-7.4: the student's enrollments with grades, and their GPA. */
 export function StudentDashboardView({ data }: { data: StudentDashboard }) {
@@ -27,7 +28,7 @@ export function StudentDashboardView({ data }: { data: StudentDashboard }) {
           My enrollments and grades
         </h2>
         {enrollments.length === 0 ? (
-          <p className="text-slate-500">You aren't enrolled in any course yet.</p>
+          <EmptyState>You aren't enrolled in any courses yet.</EmptyState>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y text-sm">

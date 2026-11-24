@@ -12,6 +12,7 @@ import { useSetCourseGrades } from '../hooks/useEnrollments';
 import { GRADES } from '../lib/labels';
 import { compareSemesters } from '../lib/semesters';
 import type { CourseDetailOut, Grade, RosterEntry } from '../types';
+import { EmptyState } from '../components/EmptyState';
 
 const ALL = '';
 const NOT_GRADED = '';
@@ -57,9 +58,9 @@ function GradeEntry({ course }: { course: CourseDetailOut }) {
       {canGrade && course.roster ? (
         <GradeTable course={course} roster={course.roster} />
       ) : (
-        <p className="rounded-lg border bg-white p-4 text-slate-600">
+        <EmptyState boxed>
           You can only enter grades for courses you teach or courses of the department you head.
-        </p>
+        </EmptyState>
       )}
     </div>
   );
@@ -133,9 +134,9 @@ function GradeTable({ course, roster }: { course: CourseDetailOut; roster: Roste
 
   if (roster.length === 0) {
     return (
-      <p className="rounded-lg border bg-white p-4 text-slate-600">
+      <EmptyState boxed>
         No students are enrolled in {course.code} yet, so there is nothing to grade.
-      </p>
+      </EmptyState>
     );
   }
 

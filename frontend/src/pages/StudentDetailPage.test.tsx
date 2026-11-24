@@ -85,7 +85,7 @@ describe('StudentDetailPage', () => {
     renderApp('/students/1');
 
     expect(await screen.findByText('not graded yet')).toBeInTheDocument();
-    expect(screen.getByText('Not enrolled in any course.')).toBeInTheDocument();
+    expect(screen.getByText('Not enrolled in any courses yet.')).toBeInTheDocument();
     expect(screen.getByText('No account')).toBeInTheDocument();
   });
 
