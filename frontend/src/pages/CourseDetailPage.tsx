@@ -100,6 +100,14 @@ export function CourseDetailPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          {editMode && course.roster !== null && course.roster.length > 0 && (
+            <Link
+              to={`/courses/${String(course.id)}/grades`}
+              className="rounded bg-blue-700 px-4 py-2 text-white hover:bg-blue-800"
+            >
+              Enter grades
+            </Link>
+          )}
           {editMode && (
             <button
               type="button"

@@ -1,12 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { setCourseGrades } from '../api/courses';
 import { enroll, unenroll } from '../api/enrollments';
-import type { EnrollmentCreate } from '../types';
+import type { BulkGradeItem, EnrollmentCreate } from '../types';
 import { courseKeys } from './useCourses';
 import { dashboardKeys } from './useDashboard';
 import { studentKeys } from './useStudents';
 
-/** Enrolling changes the course roster, the student's enrollments and dashboards. */
+/** Enrolling and grading change the course roster, students' grades and GPA, and dashboards. */
 function useInvalidateEnrollments() {
   const queryClient = useQueryClient();
   return async () => {
@@ -30,4 +31,13 @@ export function useEnroll() {
 export function useUnenroll() {
   const invalidate = useInvalidateEnrollments();
   return useMutation({ mutationFn: (id: number) => unenroll(id), onSuccess: invalidate });
+}
+
+/** PUT /courses/{id}/grades (FR-6.7). All-or-nothing on the server. */
+export function useSetCourseGrades(courseId: number) {
+  const invalidate = useInvalidateEnrollments();
+  return useMutation({
+    mutationFn: (rows: BulkGradeItem[]) => setCourseGrades(courseId, rows),
+    onSuccess: invalidate,
+  });
 }
