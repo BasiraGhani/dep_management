@@ -7,6 +7,20 @@ A web application for managing a university's departments, teachers, students, c
 > This repository currently contains the **planning kit only**. No application code has been written yet.
 > A coding agent builds the system one task at a time from `TASKS.md`, and each task is reviewed before the next one starts.
 
+## Run with Docker
+
+Runs the whole stack (PostgreSQL, backend, frontend behind Nginx) with one command:
+
+```bash
+cp .env.example .env      # then set POSTGRES_PASSWORD, SECRET_KEY and FIRST_ADMIN_PASSWORD
+docker compose up --build
+```
+
+Open http://localhost and sign in as the admin from `.env`. Set `SEED_DEMO=true` in `.env`
+for demo data with one login per role (password `demo-password`). Migrations run each time
+the backend starts; the database lives in the `pgdata` volume (`docker compose down -v`
+deletes it).
+
 ## What's in this kit
 
 | File | Purpose | Who reads it |

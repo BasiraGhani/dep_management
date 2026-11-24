@@ -296,7 +296,7 @@ References: **FR/BR/NFR** → `docs/REQUIREMENTS.md` · **§** → `docs/ARCHITE
 - **Acceptance:**
   - [ ] CI runs the backend tests on both SQLite and PostgreSQL, and both are green
 
-### [ ] T8.2 Docker
+### [~] T8.2 Docker
 - **Depends on:** T8.1
 - **Do:** Add a backend Dockerfile (migrations run on start), a frontend Dockerfile (build, then serve with Nginx and proxy `/api` to the backend) and `docker-compose.yml` with `db`, `backend` and `frontend` plus a Postgres volume.
 - **Acceptance:**
