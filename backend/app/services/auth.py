@@ -1,5 +1,6 @@
 """Authentication rules: login, token -> user, and password changes."""
 
+import math
 from functools import lru_cache
 
 from fastapi import HTTPException, status
@@ -12,12 +13,14 @@ from app.core.security import (
     create_access_token,
     decode_access_token,
     hash_password,
+    login_throttle,
     verify_password,
 )
 from app.models.user import User
 
 INVALID_CREDENTIALS = "Incorrect username or password"
 ACCOUNT_DEACTIVATED = "Account is deactivated"
+TOO_MANY_ATTEMPTS = "Too many failed login attempts. Try again in {minutes} minute(s)."
 BEARER = {"WWW-Authenticate": "Bearer"}
 
 
@@ -31,19 +34,31 @@ def _dummy_hash() -> str:
     return hash_password("dummy-password-for-timing")
 
 
-def authenticate(db: Session, username: str, password: str) -> User:
+def authenticate(db: Session, username: str, password: str, client: str = "unknown") -> User:
     """Check a username/password pair and return the user (FR-1.1).
 
     * Unknown username or wrong password: 401 with one generic message, and the
       same hashing work in both cases, so usernames can't be discovered.
     * Correct password on a deactivated account: 403 (FR-8.2).
+    * Too many recent failures from this client (for this username, or overall):
+      429 with Retry-After, before the password is even checked (T8.4).
     """
+    wait = login_throttle.retry_after(client, username)
+    if wait is not None:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=TOO_MANY_ATTEMPTS.format(minutes=math.ceil(wait / 60)),
+            headers={"Retry-After": str(wait)},
+        )
     user = db.scalar(select(User).where(User.username == username.strip().lower()))
     if user is None:
         verify_password(password, _dummy_hash())
+        login_throttle.record_failure(client, username)
         raise _unauthorized(INVALID_CREDENTIALS)
     if not verify_password(password, user.password_hash):
+        login_throttle.record_failure(client, username)
         raise _unauthorized(INVALID_CREDENTIALS)
+    login_throttle.record_success(client, username)
     if not user.is_active:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail=ACCOUNT_DEACTIVATED)
     return user

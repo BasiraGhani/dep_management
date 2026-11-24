@@ -1,5 +1,11 @@
-"""Password hashing (argon2 via pwdlib) and JWT access tokens (PyJWT)."""
+"""Password hashing (argon2 via pwdlib), JWT access tokens (PyJWT) and the
+failed-login throttle."""
 
+import math
+import threading
+import time
+from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
@@ -111,3 +117,75 @@ def decode_access_token(token: str) -> TokenData:
         role=role,
         expires_at=datetime.fromtimestamp(payload["exp"], UTC),
     )
+
+
+# ---------------------------------------------------------------------------
+# Failed-login throttle
+# ---------------------------------------------------------------------------
+
+# Failed logins allowed in the window before further attempts get 429:
+MAX_FAILURES_PER_ACCOUNT = 5  # one client trying one username
+MAX_FAILURES_PER_CLIENT = 20  # one client trying any usernames (credential stuffing)
+FAILURE_WINDOW_SECONDS = 15 * 60
+
+
+class LoginThrottle:
+    """Counts failed logins in a sliding window and says when to slow down.
+
+    Keyed by client IP and username, so an attacker elsewhere can't lock a real
+    user out, plus by client IP alone. In memory: per backend process, and reset
+    on restart (enough for the single-process deployment in docker-compose.yml).
+    """
+
+    def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
+        self._clock = clock
+        self._failures: dict[str, deque[float]] = {}
+        self._lock = threading.Lock()
+
+    @staticmethod
+    def _keys(client: str, username: str) -> tuple[str, str]:
+        return f"account:{client}:{username.strip().lower()}", f"client:{client}"
+
+    def _recent(self, key: str, now: float) -> deque[float]:
+        times = self._failures.get(key, deque())
+        while times and times[0] <= now - FAILURE_WINDOW_SECONDS:
+            times.popleft()
+        if not times:
+            self._failures.pop(key, None)
+        return times
+
+    def retry_after(self, client: str, username: str) -> int | None:
+        """Seconds until this client may try this username again, or None if it may now."""
+        now = self._clock()
+        account_key, client_key = self._keys(client, username)
+        with self._lock:
+            waits = [
+                times[0] + FAILURE_WINDOW_SECONDS - now
+                for key, limit in (
+                    (account_key, MAX_FAILURES_PER_ACCOUNT),
+                    (client_key, MAX_FAILURES_PER_CLIENT),
+                )
+                if len(times := self._recent(key, now)) >= limit
+            ]
+        return max(1, math.ceil(max(waits))) if waits else None
+
+    def record_failure(self, client: str, username: str) -> None:
+        now = self._clock()
+        with self._lock:
+            for key in self._keys(client, username):
+                times = self._recent(key, now)
+                times.append(now)
+                self._failures[key] = times
+
+    def record_success(self, client: str, username: str) -> None:
+        """A correct password clears that account's count (not the client's)."""
+        account_key, _ = self._keys(client, username)
+        with self._lock:
+            self._failures.pop(account_key, None)
+
+    def reset(self) -> None:
+        with self._lock:
+            self._failures.clear()
+
+
+login_throttle = LoginThrottle()

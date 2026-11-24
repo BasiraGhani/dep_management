@@ -18,7 +18,7 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.config import Settings, get_settings
+from app.config import Settings, get_settings, is_placeholder
 from app.core.security import hash_password
 from app.database import SessionLocal
 from app.models import (
@@ -57,6 +57,8 @@ def seed_admin(db: Session, settings: Settings) -> bool:
         raise SeedError("Set FIRST_ADMIN_USERNAME and FIRST_ADMIN_PASSWORD (e.g. in backend/.env)")
     if len(password) < PASSWORD_MIN_LENGTH:
         raise SeedError(f"FIRST_ADMIN_PASSWORD must be at least {PASSWORD_MIN_LENGTH} characters")
+    if is_placeholder(password):
+        raise SeedError("FIRST_ADMIN_PASSWORD is still the example value; choose a real one")
 
     existing = db.scalar(select(User).where(User.username == username))
     if existing is not None:

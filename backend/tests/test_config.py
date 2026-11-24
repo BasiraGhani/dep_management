@@ -92,5 +92,23 @@ def test_env_example_documents_every_setting() -> None:
 
 
 @pytest.mark.usefixtures("clean_env")
-def test_env_example_values_are_valid() -> None:
+def test_env_example_values_are_valid_once_a_real_secret_is_set(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SECRET_KEY", SECRET)
     Settings(_env_file=BACKEND_DIR / ".env.example")
+
+
+@pytest.mark.usefixtures("clean_env")
+def test_env_example_secret_key_is_refused_as_is() -> None:
+    """Copying .env.example unchanged must not give a working (guessable) secret."""
+    with pytest.raises(ValidationError, match="SECRET_KEY is still the example value"):
+        Settings(_env_file=BACKEND_DIR / ".env.example")
+
+
+@pytest.mark.usefixtures("clean_env")
+@pytest.mark.parametrize("value", ["*", "http://localhost:5173,*"])
+def test_wildcard_cors_origin_is_refused(monkeypatch: pytest.MonkeyPatch, value: str) -> None:
+    monkeypatch.setenv("CORS_ORIGINS", value)
+    with pytest.raises(ValidationError, match="not '\\*'"):
+        Settings(_env_file=None, secret_key=SECRET)

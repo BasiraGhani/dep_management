@@ -22,6 +22,18 @@ interface RosterEntry {
   grade: string | null;
 }
 
+// Fail any test whose page breaks the Content-Security-Policy (T8.4).
+const cspViolations: string[] = [];
+test.beforeEach(({ page }) => {
+  cspViolations.length = 0;
+  page.on('console', (message) => {
+    if (/Content Security Policy/i.test(message.text())) cspViolations.push(message.text());
+  });
+});
+test.afterEach(() => {
+  expect(cspViolations).toEqual([]);
+});
+
 async function signIn(page: Page, username: string, dashboard: string) {
   await page.goto('/login');
   await page.getByLabel('Username').fill(username);

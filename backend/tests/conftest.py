@@ -34,7 +34,7 @@ from sqlalchemy import Connection, Engine, event  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 from app.config import BACKEND_DIR  # noqa: E402
-from app.core.security import hash_password  # noqa: E402
+from app.core.security import hash_password, login_throttle  # noqa: E402
 from app.database import create_db_engine, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import (  # noqa: E402
@@ -124,6 +124,14 @@ def session(engine: Engine) -> Iterator[Session]:
         db_session.close()
         outer.rollback()
         connection.close()
+
+
+@pytest.fixture(autouse=True)
+def _reset_login_throttle() -> Iterator[None]:
+    """Failed-login counts are process-wide; no test may inherit another's."""
+    login_throttle.reset()
+    yield
+    login_throttle.reset()
 
 
 @pytest.fixture

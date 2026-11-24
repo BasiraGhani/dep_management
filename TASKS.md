@@ -309,7 +309,7 @@ References: **FR/BR/NFR** → `docs/REQUIREMENTS.md` · **§** → `docs/ARCHITE
 - **Acceptance:**
   - [ ] The smoke test passes against the Docker stack
 
-### [ ] T8.4 Documentation and security review
+### [~] T8.4 Documentation and security review
 - **Depends on:** T8.3
 - **Do:** Write the final README (setup in under 10 steps, demo logins, architecture summary, how to run tests). Run a security pass: CORS limited to the frontend origin, `SECRET_KEY` required in production, rate-limit or delay repeated failed logins, and no secrets in the repo.
 - **Acceptance:**
