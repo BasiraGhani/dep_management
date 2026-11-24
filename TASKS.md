@@ -263,7 +263,7 @@ References: **FR/BR/NFR** → `docs/REQUIREMENTS.md` · **§** → `docs/ARCHITE
 - **Acceptance:**
   - [ ] Each role's dashboard renders correctly (tested with mocked payloads)
 
-### [ ] T7.2 Bulk grade entry
+### [~] T7.2 Bulk grade entry
 - **Depends on:** T6.5
 - **Do:** Build `/courses/:id/grades`: a table of enrolled students with a grade dropdown in each row, a semester filter, and "Save all" calling the bulk endpoint. Warn before leaving the page with unsaved changes.
 - **Acceptance:**

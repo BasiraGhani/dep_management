@@ -43,7 +43,7 @@ const ROUTES: [path: string, heading: string, roles: UserRole[]][] = [
   ['/students/3', 'Amira Costa', ['admin', 'hod', 'teacher']],
   ['/courses', 'Courses', ['admin', 'hod', 'teacher', 'student']],
   ['/courses/3', 'CS101 Programming', ['admin', 'hod', 'teacher', 'student']],
-  ['/courses/3/grades', 'Grade entry #3', ['admin', 'hod', 'teacher']],
+  ['/courses/3/grades', 'Grades: CS101 Programming', ['admin', 'hod', 'teacher']],
   ['/users', 'User management', ['admin']],
   ['/profile', 'My profile', ['admin', 'hod', 'teacher', 'student']],
 ];
