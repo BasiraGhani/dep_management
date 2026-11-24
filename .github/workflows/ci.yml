@@ -63,6 +63,9 @@ jobs:
     env:
       # conftest.py runs the migrations and the whole suite against this database.
       TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/dept_test
+      # The app's settings (loaded by Alembic) require a SECRET_KEY. CI has no .env;
+      # this is a throwaway test value, like the one conftest.py sets for pytest.
+      SECRET_KEY: ci-test-secret-key-not-for-production
     steps:
       - uses: actions/checkout@v5
 
