@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router';
 
 import { AppRoutes } from '../AppRoutes';
 import { AuthProvider } from '../auth/AuthProvider';
+import { ToastProvider } from '../components/ToastProvider';
 import { createQueryClient } from '../lib/queryClient';
 
 /** Render the real routes and providers at `route`, like App does in the browser. */
@@ -16,7 +17,9 @@ export function renderApp(route = '/', children: ReactNode = <AppRoutes />): Ren
   return render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+        <ToastProvider>
+          <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>,
   );
