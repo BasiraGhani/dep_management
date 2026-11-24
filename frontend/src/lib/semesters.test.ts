@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { currentSemester, semesterOptions } from './semesters';
+import { compareSemesters, currentSemester, semesterOptions } from './semesters';
 
 describe('semesters', () => {
   it.each([
@@ -25,6 +25,17 @@ describe('semesters', () => {
       '2027-Spring',
       '2027-Summer',
       '2027-Fall',
+    ]);
+  });
+
+  it('compares semesters in calendar order', () => {
+    const shuffled = ['2026-Fall', '2025-Fall', '2026-Spring', '2026-Summer', '2025-Spring'];
+    expect([...shuffled].sort(compareSemesters)).toEqual([
+      '2025-Spring',
+      '2025-Fall',
+      '2026-Spring',
+      '2026-Summer',
+      '2026-Fall',
     ]);
   });
 });

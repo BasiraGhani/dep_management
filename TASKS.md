@@ -257,7 +257,7 @@ References: **FR/BR/NFR** → `docs/REQUIREMENTS.md` · **§** → `docs/ARCHITE
 
 ## Phase 7 — Dashboards, grades UI & polish
 
-### [ ] T7.1 Role dashboards
+### [~] T7.1 Role dashboards
 - **Depends on:** T6.5
 - **Do:** Build the `/` dashboard for each role using the `/dashboard` payload: stat cards, a "students per department" bar chart (Recharts) for admin and HOD, a course list with ungraded counts for teachers, and enrollments, grades and GPA for students.
 - **Acceptance:**

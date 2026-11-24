@@ -125,6 +125,22 @@ describe('capacity', () => {
     expect(within(panel).getByText('0 / 40')).toBeInTheDocument();
   });
 
+  it('lists the semesters in calendar order', async () => {
+    const { panel } = await openAsAdmin();
+    const options = within(within(panel).getByLabelText('Semester'))
+      .getAllByRole('option')
+      .map((o) => o.textContent);
+
+    expect(options.slice(0, 6)).toEqual([
+      '2025-Spring',
+      '2025-Summer',
+      '2025-Fall',
+      '2026-Spring',
+      '2026-Summer',
+      '2026-Fall',
+    ]);
+  });
+
   it('says when the course is full and disables enrolling', async () => {
     vi.mocked(getCourse).mockResolvedValue({ ...course, capacity: 2 });
     const { panel } = await openAsAdmin();

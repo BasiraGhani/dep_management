@@ -13,7 +13,7 @@ import { useCourseQuery, useDeleteCourse } from '../hooks/useCourses';
 import { useDepartmentQuery } from '../hooks/useDepartments';
 import { useUnenroll } from '../hooks/useEnrollments';
 import { TITLE_LABEL } from '../lib/labels';
-import { currentSemester, semesterOptions } from '../lib/semesters';
+import { compareSemesters, currentSemester, semesterOptions } from '../lib/semesters';
 import type { RosterEntry } from '../types';
 
 export function CourseDetailPage() {
@@ -47,7 +47,7 @@ export function CourseDetailPage() {
   const canManageEnrollments = canDelete && course.roster !== null;
   const semesters = Array.from(
     new Set([...semesterOptions(), ...(course.roster ?? []).map((r) => r.semester)]),
-  ).sort((a, b) => a.localeCompare(b));
+  ).sort(compareSemesters);
 
   const onUnenroll = async (entry: RosterEntry) => {
     const name = `${entry.first_name} ${entry.last_name}`;
