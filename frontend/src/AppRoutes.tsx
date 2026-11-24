@@ -10,6 +10,8 @@ import { DepartmentDetailPage } from './pages/DepartmentDetailPage';
 import { DepartmentsPage } from './pages/DepartmentsPage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { TeacherDetailPage } from './pages/TeacherDetailPage';
+import { TeachersPage } from './pages/TeachersPage';
 
 /**
  * Every route of ARCHITECTURE §4. Pages not built yet show a placeholder naming
@@ -26,8 +28,8 @@ export function AppRoutes() {
 
           <Route path="departments" element={<DepartmentsPage />} />
           <Route path="departments/:id" element={<DepartmentDetailPage />} />
-          <Route path="teachers" element={<ComingSoon title="Teachers" task="T6.2" />} />
-          <Route path="teachers/:id" element={<ComingSoon title="Teacher" task="T6.2" />} />
+          <Route path="teachers" element={<TeachersPage />} />
+          <Route path="teachers/:id" element={<TeacherDetailPage />} />
           <Route path="courses" element={<ComingSoon title="Courses" task="T6.4" />} />
           <Route path="courses/:id" element={<ComingSoon title="Course" task="T6.4" />} />
           <Route path="profile" element={<ComingSoon title="My profile" task="T7.3" />} />

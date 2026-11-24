@@ -23,10 +23,11 @@ export function useDepartmentsQuery(params: ListParams) {
   });
 }
 
-export function useDepartmentQuery(id: number) {
+export function useDepartmentQuery(id: number, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: departmentKeys.detail(id),
     queryFn: () => getDepartment(id),
+    enabled: options.enabled ?? true,
   });
 }
 

@@ -4,12 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getMe, login } from './api/auth';
 import { getDepartment, listDepartments } from './api/departments';
-import { listTeachers } from './api/teachers';
+import { getTeacher, listTeachers } from './api/teachers';
 import { browser } from './api/browser';
 import { api } from './api/client';
 import { clearToken, getToken, setToken } from './auth/token';
 import { stubApi } from './test/apiStub';
-import { csDepartment, csDepartmentDetail, csTeachers, meFor } from './test/fixtures';
+import { csDepartment, csDepartmentDetail, csTeachers, kayDetail, meFor } from './test/fixtures';
 import { renderApp } from './test/render';
 import type { UserRole } from './types';
 
@@ -26,7 +26,7 @@ const ROUTES: [path: string, heading: string, roles: UserRole[]][] = [
   ['/departments', 'Departments', ['admin', 'hod', 'teacher', 'student']],
   ['/departments/3', 'Computer Science', ['admin', 'hod', 'teacher', 'student']],
   ['/teachers', 'Teachers', ['admin', 'hod', 'teacher', 'student']],
-  ['/teachers/3', 'Teacher #3', ['admin', 'hod', 'teacher', 'student']],
+  ['/teachers/3', 'Alan Kay', ['admin', 'hod', 'teacher', 'student']],
   ['/students', 'Students', ['admin', 'hod', 'teacher']],
   ['/students/3', 'Student #3', ['admin', 'hod', 'teacher']],
   ['/courses', 'Courses', ['admin', 'hod', 'teacher', 'student']],
@@ -42,6 +42,7 @@ beforeEach(() => {
   vi.mocked(listDepartments).mockResolvedValue({ items: [csDepartment], total: 1 });
   vi.mocked(getDepartment).mockResolvedValue(csDepartmentDetail);
   vi.mocked(listTeachers).mockResolvedValue(csTeachers);
+  vi.mocked(getTeacher).mockResolvedValue(kayDetail);
 });
 afterEach(() => {
   vi.restoreAllMocks();
