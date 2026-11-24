@@ -116,3 +116,19 @@ export const csTeachers = {
     },
   ],
 };
+
+/** GET /teachers/2 as staff see it (Alan Kay, CS head, teaches CS101). */
+export const kayDetail = {
+  id: 2,
+  first_name: 'Alan',
+  last_name: 'Kay',
+  title: 'associate_professor' as const,
+  email: 'alan@uni.example',
+  department_id: 3,
+  phone: '555-0102',
+  hire_date: '2015-09-01',
+  created_at: '2026-09-01T10:00:00Z',
+  updated_at: '2026-09-01T10:00:00Z',
+  courses: [{ id: 11, code: 'CS101', title: 'Programming', credits: 4, teacher_id: 2 }],
+  user_id: 10,
+};
