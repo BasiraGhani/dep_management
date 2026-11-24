@@ -290,7 +290,7 @@ References: **FR/BR/NFR** → `docs/REQUIREMENTS.md` · **§** → `docs/ARCHITE
 
 ## Phase 8 — Hardening & deployment
 
-### [ ] T8.1 PostgreSQL support
+### [~] T8.1 PostgreSQL support
 - **Depends on:** T7.4
 - **Do:** Add the `psycopg` driver and confirm that the migrations and the full test suite run against PostgreSQL (CI service container). Fix any SQLite-only behavior, such as case-insensitive uniqueness.
 - **Acceptance:**

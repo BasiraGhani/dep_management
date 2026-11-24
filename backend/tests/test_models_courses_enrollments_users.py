@@ -11,7 +11,14 @@ from sqlalchemy.orm import Session
 
 from app.models import Course, Enrollment, Grade, Student, StudentStatus, UserRole
 from tests.conftest import Factory
-from tests.helpers import foreign_keys, insert_raw, nullable_columns, unique_columns
+from tests.helpers import (
+    FK_VIOLATION,
+    foreign_keys,
+    insert_raw,
+    nullable_columns,
+    unique_columns,
+    unique_violation,
+)
 
 
 def add_enrollment(
@@ -75,7 +82,7 @@ def test_nullable_columns_match_the_spec(engine: Engine) -> None:
 
 def test_duplicate_course_code_is_rejected_case_insensitively(factory: Factory) -> None:
     factory.course(code="cs101")
-    with pytest.raises(IntegrityError, match="courses.code"):
+    with pytest.raises(IntegrityError, match=unique_violation("courses", "code")):
         factory.course(code="CS101")
 
 
@@ -111,19 +118,19 @@ def test_capacity_below_1_is_rejected(factory: Factory) -> None:
 
 
 def test_course_with_unknown_department_is_rejected(factory: Factory) -> None:
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         factory.course(department_id=999_999)
 
 
 def test_course_with_unknown_teacher_is_rejected(factory: Factory) -> None:
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         factory.course(teacher_id=999_999)
 
 
 def test_teacher_who_teaches_a_course_cannot_be_deleted(session: Session, factory: Factory) -> None:
     teacher = factory.teacher()
     factory.course(teacher.department, teacher=teacher)
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         session.execute(text("DELETE FROM teachers WHERE id = :id"), {"id": teacher.id})
 
 
@@ -133,7 +140,9 @@ def test_teacher_who_teaches_a_course_cannot_be_deleted(session: Session, factor
 def test_same_student_course_and_semester_is_rejected(session: Session, factory: Factory) -> None:
     student, course = factory.student(), factory.course()
     add_enrollment(session, student.id, course.id, "2026-Fall")
-    with pytest.raises(IntegrityError, match="enrollments.student_id, enrollments.course_id"):
+    with pytest.raises(
+        IntegrityError, match=unique_violation("enrollments", "student_id", "course_id", "semester")
+    ):
         add_enrollment(session, student.id, course.id, "2026-Fall")
 
 
@@ -201,7 +210,7 @@ def test_course_with_enrollments_cannot_be_deleted(session: Session, factory: Fa
     add_enrollment(session, factory.student().id, course.id)
     session.commit()
 
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         session.execute(text("DELETE FROM courses WHERE id = :id"), {"id": course.id})
 
 
@@ -211,10 +220,10 @@ def test_enrollment_with_unknown_student_or_course_is_rejected(
     student, course = factory.student(), factory.course()
     session.commit()
 
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         add_enrollment(session, student_id=999_999, course_id=course.id)
     session.rollback()
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         add_enrollment(session, student_id=student.id, course_id=999_999)
 
 
@@ -256,7 +265,7 @@ def test_unknown_grade_is_rejected_by_the_database(session: Session, factory: Fa
 
 def test_duplicate_username_is_rejected_case_insensitively(factory: Factory) -> None:
     factory.user(username="ada")
-    with pytest.raises(IntegrityError, match="users.username"):
+    with pytest.raises(IntegrityError, match=unique_violation("users", "username")):
         factory.user(username="ADA")
 
 
@@ -267,14 +276,14 @@ def test_username_is_stored_lowercase(factory: Factory) -> None:
 def test_a_teacher_can_have_only_one_account(factory: Factory) -> None:
     teacher = factory.teacher()
     factory.user(UserRole.TEACHER, teacher=teacher)
-    with pytest.raises(IntegrityError, match="users.teacher_id"):
+    with pytest.raises(IntegrityError, match=unique_violation("users", "teacher_id")):
         factory.user(UserRole.TEACHER, teacher=teacher)
 
 
 def test_a_student_can_have_only_one_account(factory: Factory) -> None:
     student = factory.student()
     factory.user(UserRole.STUDENT, student=student)
-    with pytest.raises(IntegrityError, match="users.student_id"):
+    with pytest.raises(IntegrityError, match=unique_violation("users", "student_id")):
         factory.user(UserRole.STUDENT, student=student)
 
 
@@ -284,10 +293,10 @@ def test_many_accounts_without_links_are_allowed(factory: Factory) -> None:
 
 
 def test_user_links_must_point_to_existing_records(session: Session, factory: Factory) -> None:
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         factory.user(UserRole.TEACHER, teacher_id=999_999)
     session.rollback()
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         factory.user(UserRole.STUDENT, student_id=999_999)
 
 

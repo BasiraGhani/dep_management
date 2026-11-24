@@ -13,7 +13,14 @@ from sqlalchemy.orm import Session
 
 from app.models import Department, Teacher, TeacherTitle
 from tests.conftest import Factory
-from tests.helpers import foreign_keys, insert_raw, nullable_columns, unique_columns
+from tests.helpers import (
+    FK_VIOLATION,
+    foreign_keys,
+    insert_raw,
+    nullable_columns,
+    unique_columns,
+    unique_violation,
+)
 
 # ---------- Schema created by the migration ----------
 
@@ -46,31 +53,31 @@ def test_nullable_columns_match_the_spec(engine: Engine) -> None:
 
 def test_duplicate_department_code_is_rejected(factory: Factory) -> None:
     factory.department(code="CS")
-    with pytest.raises(IntegrityError, match="departments.code"):
+    with pytest.raises(IntegrityError, match=unique_violation("departments", "code")):
         factory.department(code="cs")
 
 
 def test_duplicate_department_name_is_rejected(factory: Factory) -> None:
     factory.department(name="Computer Science")
-    with pytest.raises(IntegrityError, match="departments.name"):
+    with pytest.raises(IntegrityError, match=unique_violation("departments", "name")):
         factory.department(name="Computer Science")
 
 
 def test_duplicate_teacher_email_is_rejected_case_insensitively(factory: Factory) -> None:
     factory.teacher(email="ada@uni.edu")
-    with pytest.raises(IntegrityError, match="teachers.email"):
+    with pytest.raises(IntegrityError, match=unique_violation("teachers", "email")):
         factory.teacher(email="ADA@Uni.edu")
 
 
 def test_duplicate_student_number_is_rejected_case_insensitively(factory: Factory) -> None:
     factory.student(student_no="s0001")
-    with pytest.raises(IntegrityError, match="students.student_no"):
+    with pytest.raises(IntegrityError, match=unique_violation("students", "student_no")):
         factory.student(student_no="S0001")
 
 
 def test_duplicate_student_email_is_rejected_case_insensitively(factory: Factory) -> None:
     factory.student(email="alan@uni.edu")
-    with pytest.raises(IntegrityError, match="students.email"):
+    with pytest.raises(IntegrityError, match=unique_violation("students", "email")):
         factory.student(email="Alan@UNI.edu")
 
 
@@ -86,19 +93,19 @@ def test_codes_numbers_and_emails_are_normalized(factory: Factory) -> None:
 
 
 def test_teacher_with_unknown_department_is_rejected(factory: Factory) -> None:
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         factory.teacher(department_id=999_999)
 
 
 def test_student_with_unknown_department_is_rejected(factory: Factory) -> None:
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         factory.student(department_id=999_999)
 
 
 def test_department_head_must_be_an_existing_teacher(session: Session, factory: Factory) -> None:
     department = factory.department()
     department.head_id = 999_999
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         session.flush()
 
 
@@ -107,7 +114,7 @@ def test_department_with_teachers_cannot_be_deleted(session: Session, factory: F
     factory.teacher(department)
     session.commit()
 
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         session.execute(text("DELETE FROM departments WHERE id = :id"), {"id": department.id})
 
 
@@ -119,7 +126,7 @@ def test_teacher_who_heads_a_department_cannot_be_deleted(
     department.head_id = teacher.id
     session.commit()
 
-    with pytest.raises(IntegrityError, match="FOREIGN KEY"):
+    with pytest.raises(IntegrityError, match=FK_VIOLATION):
         session.execute(text("DELETE FROM teachers WHERE id = :id"), {"id": teacher.id})
 
 

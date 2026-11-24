@@ -1,5 +1,6 @@
 """Plain helper functions shared by tests (fixtures live in conftest.py)."""
 
+import re
 from datetime import UTC, datetime
 from typing import Any
 
@@ -8,6 +9,20 @@ from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token
 from app.models import User
+
+# IntegrityError messages differ by database; these patterns match both.
+FK_VIOLATION = r"FOREIGN KEY constraint failed|violates foreign key constraint"
+
+
+def unique_violation(table: str, *columns: str) -> str:
+    """Pattern for a unique-constraint error on `table(columns)`.
+
+    SQLite: "UNIQUE constraint failed: t.a, t.b"; PostgreSQL names the
+    constraint (naming convention `uq_<table>_<columns>`).
+    """
+    sqlite = "UNIQUE constraint failed: " + ", ".join(f"{table}.{c}" for c in columns)
+    postgres = f'unique constraint "uq_{table}_{"_".join(columns)}"'
+    return f"{re.escape(sqlite)}|{re.escape(postgres)}"
 
 
 def insert_raw(session: Session, table: str, **values: Any) -> None:

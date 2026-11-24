@@ -60,5 +60,20 @@ between tests shows up as a failure. The run prints its seed; to repeat that ord
 pytest --random-order-seed=<seed>
 ```
 
+### PostgreSQL
+
+The app runs on SQLite (default) or PostgreSQL: set `DATABASE_URL` to e.g.
+`postgresql+psycopg://user:password@localhost:5432/dept` and run `alembic upgrade head`.
+
+The tests use a temporary SQLite database unless `TEST_DATABASE_URL` points at a
+PostgreSQL database, which is **wiped** and migrated at the start of the run:
+
+```bash
+TEST_DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/dept_test pytest -q
+```
+
+CI runs the suite on both (the "Backend tests on PostgreSQL" job uses a `postgres:16`
+service container).
+
 Test fixtures (`tests/conftest.py`): `session` (rolled back after each test),
 `client` (a `TestClient` using that session) and `factory` (creates valid rows).

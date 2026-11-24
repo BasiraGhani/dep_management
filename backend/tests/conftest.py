@@ -2,8 +2,9 @@
 
 Isolation model
 ---------------
-* One SQLite database per test session, built once with `alembic upgrade head`
-  (so every test runs against the real migrations).
+* One database per test session, built once with `alembic upgrade head` (so
+  every test runs against the real migrations): SQLite by default, PostgreSQL
+  when `TEST_DATABASE_URL` is set (see the `engine` fixture).
 * Each test runs inside an outer transaction that is rolled back afterwards.
   The test's `session` joins it with SAVEPOINTs, so code under test may call
   `commit()` or `rollback()` freely: nothing outlives the test.
@@ -77,13 +78,32 @@ def _enable_sqlite_savepoints(engine: Engine) -> None:
         connection.exec_driver_sql("BEGIN")
 
 
+def _reset_postgres_schema(database_url: str) -> None:
+    """Empty the PostgreSQL database, so the migrations run from scratch."""
+    db_engine = create_db_engine(database_url)
+    with db_engine.begin() as connection:
+        connection.exec_driver_sql("DROP SCHEMA public CASCADE")
+        connection.exec_driver_sql("CREATE SCHEMA public")
+    db_engine.dispose()
+
+
 @pytest.fixture(scope="session")
 def engine(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Engine]:
-    """A fresh SQLite database for the whole test session, migrated to head."""
-    database_url = f"sqlite:///{tmp_path_factory.mktemp('db') / 'test.db'}"
+    """A fresh database for the whole test session, migrated to head.
+
+    SQLite in a temporary file by default. Set `TEST_DATABASE_URL` (e.g.
+    `postgresql+psycopg://postgres:postgres@localhost:5432/dept_test`) to run the
+    suite against PostgreSQL instead; that database is wiped first.
+    """
+    database_url = os.environ.get("TEST_DATABASE_URL") or (
+        f"sqlite:///{tmp_path_factory.mktemp('db') / 'test.db'}"
+    )
+    if database_url.startswith("postgresql"):
+        _reset_postgres_schema(database_url)
     command.upgrade(make_alembic_config(database_url), "head")
     db_engine = create_db_engine(database_url)
-    _enable_sqlite_savepoints(db_engine)
+    if db_engine.dialect.name == "sqlite":
+        _enable_sqlite_savepoints(db_engine)
     yield db_engine
     db_engine.dispose()
 

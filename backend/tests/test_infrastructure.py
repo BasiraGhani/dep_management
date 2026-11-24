@@ -1,11 +1,12 @@
 """Tests for the test infrastructure itself (T1.4): isolation, client and factories."""
 
 import inspect as pyinspect
+import os
 from collections.abc import Iterator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import func, select
+from sqlalchemy import Engine, func, select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -14,6 +15,16 @@ from app.models import Course, Department, Student, Teacher, User, UserRole
 from tests.conftest import Factory
 
 ALL_MODELS = (Department, Teacher, Student, Course, User)
+
+# ---------- Database ----------
+
+
+def test_suite_runs_on_the_requested_database(engine: Engine) -> None:
+    """CI's PostgreSQL job must really test PostgreSQL, not fall back to SQLite."""
+    wanted = os.environ.get("TEST_DATABASE_URL", "sqlite")
+    expected = "postgresql" if wanted.startswith("postgresql") else "sqlite"
+    assert engine.dialect.name == expected
+
 
 # ---------- Isolation ----------
 # The suite runs in random order. If committed rows leaked out of a test, whichever
