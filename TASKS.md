@@ -270,7 +270,7 @@ References: **FR/BR/NFR** → `docs/REQUIREMENTS.md` · **§** → `docs/ARCHITE
   - [ ] FR-6.7 works end to end; a failed save keeps the user's edits
   - [ ] Component tests
 
-### [ ] T7.3 Profile page and user management
+### [~] T7.3 Profile page and user management
 - **Depends on:** T6.1
 - **Do:** Build `/profile` (view your own record, edit contact fields, change password) and `/users` for admins (list, filters, create, activate or deactivate, reset password showing the temporary password once).
 - **Acceptance:**
