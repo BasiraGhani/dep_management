@@ -2,15 +2,8 @@ import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router';
 
 import { useAuth } from '../auth/useAuth';
-import type { UserRole } from '../types';
+import { ROLE_LABEL } from '../lib/labels';
 import { navItemsFor } from './navItems';
-
-const ROLE_LABEL: Record<UserRole, string> = {
-  admin: 'Administrator',
-  hod: 'Head of department',
-  teacher: 'Teacher',
-  student: 'Student',
-};
 
 /** Sidebar (filtered by role), top bar (name, role, logout) and the page content. */
 export function Layout() {

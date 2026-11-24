@@ -6,6 +6,8 @@ import { RoleGate } from './auth/RoleGate';
 import { ComingSoon } from './components/ComingSoon';
 import { Layout } from './components/Layout';
 import { DashboardPage } from './pages/DashboardPage';
+import { DepartmentDetailPage } from './pages/DepartmentDetailPage';
+import { DepartmentsPage } from './pages/DepartmentsPage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
@@ -22,8 +24,8 @@ export function AppRoutes() {
         <Route element={<Layout />}>
           <Route index element={<DashboardPage />} />
 
-          <Route path="departments" element={<ComingSoon title="Departments" task="T6.1" />} />
-          <Route path="departments/:id" element={<ComingSoon title="Department" task="T6.1" />} />
+          <Route path="departments" element={<DepartmentsPage />} />
+          <Route path="departments/:id" element={<DepartmentDetailPage />} />
           <Route path="teachers" element={<ComingSoon title="Teachers" task="T6.2" />} />
           <Route path="teachers/:id" element={<ComingSoon title="Teacher" task="T6.2" />} />
           <Route path="courses" element={<ComingSoon title="Courses" task="T6.4" />} />

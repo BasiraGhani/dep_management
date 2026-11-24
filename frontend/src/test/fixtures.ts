@@ -70,3 +70,49 @@ export function meFor(role: CurrentUserOut['role']): CurrentUserOut {
   }
   return base;
 }
+
+export const csDepartment = {
+  id: 3,
+  code: 'CS',
+  name: 'Computer Science',
+  description: 'Programming and systems',
+  building: 'Turing Hall',
+  phone: '+1 555 0100',
+  head_id: 2,
+  created_at: '2026-09-01T10:00:00Z',
+  updated_at: '2026-09-01T10:00:00Z',
+};
+
+export const csDepartmentDetail = {
+  ...csDepartment,
+  head: { id: 2, first_name: 'Alan', last_name: 'Kay', title: 'associate_professor' as const },
+  teacher_count: 2,
+  student_count: 20,
+  course_count: 2,
+  courses: [
+    { id: 11, code: 'CS101', title: 'Programming', credits: 4, teacher_id: 2 },
+    { id: 12, code: 'CS201', title: 'Data Structures', credits: 4, teacher_id: 5 },
+  ],
+};
+
+export const csTeachers = {
+  total: 2,
+  items: [
+    {
+      id: 2,
+      first_name: 'Alan',
+      last_name: 'Kay',
+      title: 'associate_professor' as const,
+      email: 'alan@uni.example',
+      department_id: 3,
+    },
+    {
+      id: 5,
+      first_name: 'Grace',
+      last_name: 'Hopper',
+      title: 'professor' as const,
+      email: 'grace@uni.example',
+      department_id: 3,
+    },
+  ],
+};
