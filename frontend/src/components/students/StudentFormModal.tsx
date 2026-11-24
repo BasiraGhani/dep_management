@@ -25,8 +25,9 @@ import { useToast } from '../useToast';
 /**
  * * admin: every field, any department
  * * hod: every field, only their own department (and no moving students out)
+ * * self: a student editing their own record: phone and email only
  */
-export type StudentFormMode = 'admin' | 'hod';
+export type StudentFormMode = 'admin' | 'hod' | 'self';
 
 const STATUSES = Object.keys(STATUS_LABEL) as StudentStatus[];
 const YEARS = [1, 2, 3, 4, 5, 6];
@@ -111,6 +112,7 @@ export function StudentFormModal({
   const create = useCreateStudent();
   const update = useUpdateStudent(student?.id ?? 0);
   const departments = useDepartmentsQuery({ limit: 100 });
+  const selfOnly = mode === 'self';
 
   const {
     register,
@@ -160,7 +162,11 @@ export function StudentFormModal({
       } else {
         // A HOD can't move students to another department, so never sends it.
         const body: StudentUpdate =
-          mode === 'hod' ? record : { ...record, department_id: Number(v.department_id) };
+          mode === 'self'
+            ? { email: record.email, phone: record.phone }
+            : mode === 'hod'
+              ? record
+              : { ...record, department_id: Number(v.department_id) };
         await update.mutateAsync(body);
         toast.success(`${name} updated`);
       }
@@ -173,7 +179,13 @@ export function StudentFormModal({
   return (
     <Modal
       open={open}
-      title={editing ? `Edit ${student.first_name} ${student.last_name}` : 'New student'}
+      title={
+        editing
+          ? selfOnly
+            ? 'Edit my contact details'
+            : `Edit ${student.first_name} ${student.last_name}`
+          : 'New student'
+      }
       onClose={close}
       footer={
         <>
@@ -204,81 +216,98 @@ export function StudentFormModal({
             {errors.root.message}
           </p>
         )}
-        <FormField
-          label="Student number"
-          required
-          error={errors.student_no?.message}
-          hint="e.g. CS2026001"
-        >
-          {(p) => <input {...p} {...register('student_no')} className={inputClass} />}
-        </FormField>
+        {!selfOnly && (
+          <FormField
+            label="Student number"
+            required
+            error={errors.student_no?.message}
+            hint="e.g. CS2026001"
+          >
+            {(p) => <input {...p} {...register('student_no')} className={inputClass} />}
+          </FormField>
+        )}
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="First name" required error={errors.first_name?.message}>
-            {(p) => <input {...p} {...register('first_name')} className={inputClass} />}
-          </FormField>
-          <FormField label="Last name" required error={errors.last_name?.message}>
-            {(p) => <input {...p} {...register('last_name')} className={inputClass} />}
-          </FormField>
+          {!selfOnly && (
+            <>
+              <FormField label="First name" required error={errors.first_name?.message}>
+                {(p) => <input {...p} {...register('first_name')} className={inputClass} />}
+              </FormField>
+              <FormField label="Last name" required error={errors.last_name?.message}>
+                {(p) => <input {...p} {...register('last_name')} className={inputClass} />}
+              </FormField>
+            </>
+          )}
           <FormField label="Email" required error={errors.email?.message}>
             {(p) => <input {...p} type="email" {...register('email')} className={inputClass} />}
           </FormField>
           <FormField label="Phone" error={errors.phone?.message}>
             {(p) => <input {...p} type="tel" {...register('phone')} className={inputClass} />}
           </FormField>
-          <FormField label="Date of birth" error={errors.date_of_birth?.message}>
-            {(p) => (
-              <input {...p} type="date" {...register('date_of_birth')} className={inputClass} />
-            )}
-          </FormField>
-          <FormField label="Enrollment date" required error={errors.enrollment_date?.message}>
-            {(p) => (
-              <input {...p} type="date" {...register('enrollment_date')} className={inputClass} />
-            )}
-          </FormField>
-          <FormField label="Year of study" required error={errors.year?.message}>
-            {(p) => (
-              <select {...p} {...register('year')} className={inputClass}>
-                {YEARS.map((y) => (
-                  <option key={y} value={y}>
-                    Year {y}
-                  </option>
-                ))}
-              </select>
-            )}
-          </FormField>
-          <FormField label="Status" required error={errors.status?.message}>
-            {(p) => (
-              <select {...p} {...register('status')} className={inputClass}>
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {STATUS_LABEL[s]}
-                  </option>
-                ))}
-              </select>
-            )}
-          </FormField>
-        </div>
-        <FormField
-          label="Department"
-          required
-          error={errors.department_id?.message}
-          hint={
-            mode === 'hod'
-              ? 'Heads of department manage students of their own department only.'
-              : undefined
-          }
-        >
-          {(p) => (
-            <SelectControl control={control} name="department_id" fieldProps={p}>
-              {mode === 'admin' && <option value="">Choose…</option>}
-              {departmentOptions.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.code} — {d.name}
-                </option>
-              ))}
-            </SelectControl>
+          {!selfOnly && (
+            <>
+              <FormField label="Date of birth" error={errors.date_of_birth?.message}>
+                {(p) => (
+                  <input {...p} type="date" {...register('date_of_birth')} className={inputClass} />
+                )}
+              </FormField>
+              <FormField label="Enrollment date" required error={errors.enrollment_date?.message}>
+                {(p) => (
+                  <input
+                    {...p}
+                    type="date"
+                    {...register('enrollment_date')}
+                    className={inputClass}
+                  />
+                )}
+              </FormField>
+              <FormField label="Year of study" required error={errors.year?.message}>
+                {(p) => (
+                  <select {...p} {...register('year')} className={inputClass}>
+                    {YEARS.map((y) => (
+                      <option key={y} value={y}>
+                        Year {y}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </FormField>
+              <FormField label="Status" required error={errors.status?.message}>
+                {(p) => (
+                  <select {...p} {...register('status')} className={inputClass}>
+                    {STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {STATUS_LABEL[s]}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </FormField>
+            </>
           )}
-        </FormField>
+        </div>
+        {!selfOnly && (
+          <FormField
+            label="Department"
+            required
+            error={errors.department_id?.message}
+            hint={
+              mode === 'hod'
+                ? 'Heads of department manage students of their own department only.'
+                : undefined
+            }
+          >
+            {(p) => (
+              <SelectControl control={control} name="department_id" fieldProps={p}>
+                {mode === 'admin' && <option value="">Choose…</option>}
+                {departmentOptions.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.code} — {d.name}
+                  </option>
+                ))}
+              </SelectControl>
+            )}
+          </FormField>
+        )}
         {!editing && (
           <AccountFields
             who="student"
