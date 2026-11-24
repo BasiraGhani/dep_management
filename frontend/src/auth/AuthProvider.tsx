@@ -1,11 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { getMe, login as apiLogin } from '../api/auth';
 import { currentUserKey, useCurrentUserQuery } from '../hooks/useCurrentUser';
 import type { CurrentUserOut } from '../types';
 import { AuthContext, type AuthContextValue, type AuthStatus } from './authContext';
+import { onSessionExpired } from './session';
 import { clearToken, getToken, setToken } from './token';
 
 function isUnauthorized(error: unknown): boolean {
@@ -51,6 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTokenState(null);
     queryClient.clear();
   }, [queryClient]);
+
+  // A 401 on any request ends the session here too, not only in storage.
+  useEffect(() => onSessionExpired(logout), [logout]);
 
   const { refetch } = me;
   const retry = useCallback(() => {
