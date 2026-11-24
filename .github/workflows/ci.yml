@@ -155,11 +155,14 @@ jobs:
           page /api/v1/health | grep -q '"ok"'          # Nginx proxies /api to the backend
           asset=$(page / | grep -o '/assets/[^"]*\.js' | head -n 1)
           curl -fsSI "http://localhost$asset" | grep -qi 'cache-control: public, immutable'
-          headers=$(curl -fsSI http://localhost/)                # security headers (T8.4)
+          # Security headers (T8.4). GET (not HEAD: the API only answers GET), and
+          # strip the CR at the end of each header line before matching.
+          headers=$(curl -fsS -D - -o /dev/null http://localhost/ | tr -d '\r')
           for h in content-security-policy x-content-type-options x-frame-options referrer-policy; do
             echo "$headers" | grep -qi "^$h:" || { echo "missing header: $h"; exit 1; }
           done
-          curl -fsSI http://localhost/api/v1/health | grep -qi '^x-frame-options: DENY'
+          curl -fsS -D - -o /dev/null http://localhost/api/v1/health | tr -d '\r' \
+            | grep -qi '^x-frame-options: DENY$'               # API responses get them too
           echo "$headers" | grep -qi '^server: nginx$'          # no version number shown
           # Failed-login throttle: a fake X-Forwarded-For per attempt must not get around it.
           for i in 1 2 3 4 5; do
