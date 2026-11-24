@@ -5,12 +5,16 @@ import { errorMessage } from '../api/client';
 import { useRole } from '../auth/useRole';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CourseFormModal, type CourseFormMode } from '../components/courses/CourseFormModal';
+import { EnrollmentPanel } from '../components/courses/EnrollmentPanel';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useToast } from '../components/useToast';
 import { useCourseQuery, useDeleteCourse } from '../hooks/useCourses';
 import { useDepartmentQuery } from '../hooks/useDepartments';
+import { useUnenroll } from '../hooks/useEnrollments';
 import { TITLE_LABEL } from '../lib/labels';
+import { currentSemester, semesterOptions } from '../lib/semesters';
+import type { RosterEntry } from '../types';
 
 export function CourseDetailPage() {
   const id = Number(useParams().id);
@@ -19,7 +23,10 @@ export function CourseDetailPage() {
   const { isAdmin, isStudent, role, teacherId, hodDepartmentId } = useRole();
   const [editing, setEditing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [semester, setSemester] = useState(currentSemester);
+  const [unenrolling, setUnenrolling] = useState<RosterEntry | null>(null);
   const query = useCourseQuery(id);
+  const unenroll = useUnenroll();
   const departmentId = query.data?.department_id;
   const department = useDepartmentQuery(departmentId ?? 0, { enabled: departmentId !== undefined });
   const remove = useDeleteCourse();
@@ -36,6 +43,23 @@ export function CourseDetailPage() {
   else if (role === 'hod' && course.department_id === hodDepartmentId) editMode = 'hod';
   else if (teacherId !== null && course.teacher_id === teacherId) editMode = 'teacher';
   const canDelete = editMode === 'admin' || editMode === 'hod';
+  // Enrollments: admins and the HOD of the course's department (§3).
+  const canManageEnrollments = canDelete && course.roster !== null;
+  const semesters = Array.from(
+    new Set([...semesterOptions(), ...(course.roster ?? []).map((r) => r.semester)]),
+  ).sort((a, b) => a.localeCompare(b));
+
+  const onUnenroll = async (entry: RosterEntry) => {
+    const name = `${entry.first_name} ${entry.last_name}`;
+    try {
+      await unenroll.mutateAsync(entry.enrollment_id);
+      toast.success(`${name} unenrolled from ${course.code} (${entry.semester})`);
+    } catch (error) {
+      toast.error(errorMessage(error, 'Could not unenroll the student.'));
+    } finally {
+      setUnenrolling(null);
+    }
+  };
 
   const onDelete = async () => {
     try {
@@ -121,6 +145,15 @@ export function CourseDetailPage() {
         </div>
       </dl>
 
+      {canManageEnrollments && (
+        <EnrollmentPanel
+          course={course}
+          semester={semester}
+          semesters={semesters}
+          onSemesterChange={setSemester}
+        />
+      )}
+
       {course.roster !== null ? (
         <section aria-labelledby="roster-heading" className="space-y-2">
           <h2 id="roster-heading" className="text-lg font-semibold text-slate-800">
@@ -146,6 +179,11 @@ export function CourseDetailPage() {
                     <th scope="col" className="px-4 py-2">
                       Grade
                     </th>
+                    {canManageEnrollments && (
+                      <th scope="col" className="px-4 py-2">
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -162,6 +200,20 @@ export function CourseDetailPage() {
                       <td className="px-4 py-2">{r.student_no}</td>
                       <td className="px-4 py-2">{r.semester}</td>
                       <td className="px-4 py-2">{r.grade ?? 'Not graded'}</td>
+                      {canManageEnrollments && (
+                        <td className="px-4 py-2 text-right">
+                          <button
+                            type="button"
+                            aria-label={`Unenroll ${r.first_name} ${r.last_name} (${r.semester})`}
+                            onClick={() => {
+                              setUnenrolling(r);
+                            }}
+                            className="text-sm text-red-700 hover:underline"
+                          >
+                            Unenroll
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -189,6 +241,22 @@ export function CourseDetailPage() {
           }}
         />
       )}
+      <ConfirmDialog
+        open={unenrolling !== null}
+        title="Unenroll student?"
+        confirmLabel="Unenroll"
+        message={
+          unenrolling &&
+          `${unenrolling.first_name} ${unenrolling.last_name} will be removed from ${course.code} for ${unenrolling.semester}${unenrolling.grade ? `, including their grade (${unenrolling.grade})` : ''}.`
+        }
+        pending={unenroll.isPending}
+        onConfirm={() => {
+          if (unenrolling) void onUnenroll(unenrolling);
+        }}
+        onCancel={() => {
+          setUnenrolling(null);
+        }}
+      />
       <ConfirmDialog
         open={confirmingDelete}
         title={`Delete ${course.code}?`}
