@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getMe, login } from './api/auth';
+import { getCourse, listCourses } from './api/courses';
 import { getDepartment, listDepartments } from './api/departments';
 import { getStudent, listStudents } from './api/students';
 import { getTeacher, listTeachers } from './api/teachers';
@@ -12,6 +13,7 @@ import { clearToken, getToken, setToken } from './auth/token';
 import { stubApi } from './test/apiStub';
 import {
   amiraDetail,
+  cs101Detail,
   csDepartment,
   csDepartmentDetail,
   csTeachers,
@@ -22,6 +24,7 @@ import { renderApp } from './test/render';
 import type { UserRole } from './types';
 
 vi.mock('./api/auth', () => ({ login: vi.fn(), getMe: vi.fn(), changePassword: vi.fn() }));
+vi.mock('./api/courses');
 vi.mock('./api/departments');
 vi.mock('./api/teachers');
 vi.mock('./api/students');
@@ -39,7 +42,7 @@ const ROUTES: [path: string, heading: string, roles: UserRole[]][] = [
   ['/students', 'Students', ['admin', 'hod', 'teacher']],
   ['/students/3', 'Amira Costa', ['admin', 'hod', 'teacher']],
   ['/courses', 'Courses', ['admin', 'hod', 'teacher', 'student']],
-  ['/courses/3', 'Course #3', ['admin', 'hod', 'teacher', 'student']],
+  ['/courses/3', 'CS101 Programming', ['admin', 'hod', 'teacher', 'student']],
   ['/courses/3/grades', 'Grade entry #3', ['admin', 'hod', 'teacher']],
   ['/users', 'User management', ['admin']],
   ['/profile', 'My profile', ['admin', 'hod', 'teacher', 'student']],
@@ -53,6 +56,8 @@ beforeEach(() => {
   vi.mocked(listTeachers).mockResolvedValue(csTeachers);
   vi.mocked(getTeacher).mockResolvedValue(kayDetail);
   vi.mocked(getStudent).mockResolvedValue(amiraDetail);
+  vi.mocked(getCourse).mockResolvedValue(cs101Detail);
+  vi.mocked(listCourses).mockResolvedValue({ items: [cs101Detail], total: 1 });
   vi.mocked(listStudents).mockResolvedValue({ items: [amiraDetail], total: 1 });
 });
 afterEach(() => {
@@ -86,7 +91,7 @@ describe('ProtectedRoute', () => {
     await user.type(screen.getByLabelText('Password'), 'demo-password');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
 
-    expect(await screen.findByRole('heading', { name: 'Course #7' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'CS101 Programming' })).toBeInTheDocument();
   });
 
   it('shows a loading state while the stored token is being checked', () => {

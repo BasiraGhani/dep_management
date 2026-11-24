@@ -165,3 +165,38 @@ export const amiraDetail = {
   gpa: 4.0,
   user_id: 4,
 };
+
+/** GET /courses/11 as staff see it (CS101, taught by Alan Kay, 2 enrolled). */
+export const cs101Detail = {
+  id: 11,
+  code: 'CS101',
+  title: 'Programming',
+  description: 'Variables, loops and functions.',
+  credits: 4,
+  capacity: 40,
+  department_id: 3,
+  teacher_id: 2,
+  created_at: '2026-09-01T10:00:00Z',
+  updated_at: '2026-09-01T10:00:00Z',
+  teacher: { id: 2, first_name: 'Alan', last_name: 'Kay', title: 'associate_professor' as const },
+  roster: [
+    {
+      enrollment_id: 101,
+      student_id: 1,
+      student_no: 'CS2026001',
+      first_name: 'Amira',
+      last_name: 'Costa',
+      semester: '2026-Spring',
+      grade: 'A' as const,
+    },
+    {
+      enrollment_id: 103,
+      student_id: 7,
+      student_no: 'CS2026007',
+      first_name: 'Bo',
+      last_name: 'Diallo',
+      semester: '2026-Fall',
+      grade: null,
+    },
+  ],
+};

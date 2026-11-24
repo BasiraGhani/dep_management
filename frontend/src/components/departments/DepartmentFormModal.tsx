@@ -8,6 +8,7 @@ import { applyServerErrors, emptyToNull } from '../../lib/formErrors';
 import type { DepartmentOut, DepartmentUpdate } from '../../types';
 import { FormField, inputClass } from '../FormField';
 import { Modal } from '../Modal';
+import { SelectControl } from '../SelectControl';
 import { useToast } from '../useToast';
 
 // Mirrors the backend rules (schemas/department.py) so most mistakes are caught here.
@@ -79,6 +80,7 @@ export function DepartmentFormModal({
     handleSubmit,
     setError,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     // A HOD's hidden code/name/head fields keep the department's current (valid) values.
@@ -179,14 +181,14 @@ export function DepartmentFormModal({
             hint="Must be a teacher in this department. Their account becomes HOD."
           >
             {(p) => (
-              <select {...p} {...register('head_id')} className={inputClass}>
+              <SelectControl control={control} name="head_id" fieldProps={p}>
                 <option value="">No head</option>
                 {teachers.data?.items.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.first_name} {t.last_name}
                   </option>
                 ))}
-              </select>
+              </SelectControl>
             )}
           </FormField>
         )}

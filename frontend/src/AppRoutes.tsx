@@ -5,6 +5,8 @@ import { ProtectedRoute } from './auth/ProtectedRoute';
 import { RoleGate } from './auth/RoleGate';
 import { ComingSoon } from './components/ComingSoon';
 import { Layout } from './components/Layout';
+import { CourseDetailPage } from './pages/CourseDetailPage';
+import { CoursesPage } from './pages/CoursesPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { DepartmentDetailPage } from './pages/DepartmentDetailPage';
 import { DepartmentsPage } from './pages/DepartmentsPage';
@@ -32,8 +34,8 @@ export function AppRoutes() {
           <Route path="departments/:id" element={<DepartmentDetailPage />} />
           <Route path="teachers" element={<TeachersPage />} />
           <Route path="teachers/:id" element={<TeacherDetailPage />} />
-          <Route path="courses" element={<ComingSoon title="Courses" task="T6.4" />} />
-          <Route path="courses/:id" element={<ComingSoon title="Course" task="T6.4" />} />
+          <Route path="courses" element={<CoursesPage />} />
+          <Route path="courses/:id" element={<CourseDetailPage />} />
           <Route path="profile" element={<ComingSoon title="My profile" task="T7.3" />} />
 
           <Route element={<RoleGate roles={PAGE_ACCESS.students} />}>
