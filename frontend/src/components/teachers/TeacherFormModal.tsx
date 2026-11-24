@@ -18,6 +18,7 @@ import type { TeacherCreate, TeacherOut, TeacherTitle, TeacherUpdate } from '../
 import { AccountFields } from '../AccountFields';
 import { FormField, inputClass } from '../FormField';
 import { Modal } from '../Modal';
+import { SelectControl } from '../SelectControl';
 import { useToast } from '../useToast';
 
 /**
@@ -246,14 +247,14 @@ export function TeacherFormModal({
               }
             >
               {(p) => (
-                <select {...p} {...register('department_id')} className={inputClass}>
+                <SelectControl control={control} name="department_id" fieldProps={p}>
                   {mode === 'admin' && <option value="">Choose…</option>}
                   {departmentOptions.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.code} — {d.name}
                     </option>
                   ))}
-                </select>
+                </SelectControl>
               )}
             </FormField>
           </>
