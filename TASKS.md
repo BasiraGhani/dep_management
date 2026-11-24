@@ -303,7 +303,7 @@ References: **FR/BR/NFR** → `docs/REQUIREMENTS.md` · **§** → `docs/ARCHITE
   - [ ] `docker compose up --build` gives a working app at `http://localhost`
   - [ ] Secrets come from `.env`, and `.env.example` is updated
 
-### [ ] T8.3 End-to-end smoke test
+### [~] T8.3 End-to-end smoke test
 - **Depends on:** T8.2
 - **Do:** Add a Playwright smoke test (or a documented script): log in as each role, open the dashboard, and run one key action per role (admin creates a department, HOD creates a course, teacher saves grades, student sees their GPA).
 - **Acceptance:**

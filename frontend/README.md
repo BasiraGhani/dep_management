@@ -28,3 +28,20 @@ npm run build
 ```
 
 `npm run format` applies Prettier formatting.
+
+## End-to-end smoke test
+
+`e2e/smoke.e2e.ts` (Playwright) signs in as each demo role and does one key action:
+admin creates a department, HOD creates a course, teacher saves a grade, student sees
+their GPA. It cleans up after itself, so it can run repeatedly. It needs the demo data.
+
+```bash
+npx playwright install chromium   # once
+npm run e2e                        # against the Docker stack at http://localhost
+
+# against the dev servers instead (Vite + Uvicorn):
+E2E_BASE_URL=http://localhost:5173 E2E_API_URL=http://localhost:8000/api/v1 npm run e2e
+```
+
+Add `E2E_CHANNEL=chrome` to use an installed Google Chrome. CI runs the test against the
+Docker stack (the "Docker stack" job).
