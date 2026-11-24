@@ -40,3 +40,33 @@ export function apiError(status: number, detail: string): AxiosError {
 }
 
 export const networkError = new AxiosError('Network Error', 'ERR_NETWORK');
+
+/** GET /auth/me for an account with `role` (teacher/student links filled as needed). */
+export function meFor(role: CurrentUserOut['role']): CurrentUserOut {
+  const base = { ...teacherMe, id: 10, username: `demo.${role}`, role };
+  if (role === 'admin') return { ...base, teacher_id: null, teacher: null };
+  if (role === 'student') {
+    return {
+      ...base,
+      teacher_id: null,
+      teacher: null,
+      student_id: 1,
+      student: {
+        id: 1,
+        student_no: 'CS2026001',
+        first_name: 'Amira',
+        last_name: 'Costa',
+        email: 'amira@student.uni.example',
+        phone: null,
+        date_of_birth: null,
+        department_id: 1,
+        year: 1,
+        status: 'active',
+        enrollment_date: '2026-09-01',
+        created_at: '2026-09-01T10:00:00Z',
+        updated_at: '2026-09-01T10:00:00Z',
+      },
+    };
+  }
+  return base;
+}

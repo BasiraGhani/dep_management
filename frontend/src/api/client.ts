@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 
+import { notifySessionExpired } from '../auth/session';
 import { clearToken, getToken } from '../auth/token';
 import type { ApiErrorBody } from '../types';
 import { browser } from './browser';
@@ -26,8 +27,10 @@ export function attachToken(config: InternalAxiosRequestConfig): InternalAxiosRe
 
 /**
  * On a 401 the session is over (expired, invalid or out-of-date token, or a
- * deactivated account): clear the token and send the user to the login page.
- * A failed login itself is left alone so the form can show the error.
+ * deactivated account): clear the token and end the session. Inside the app the
+ * AuthProvider handles that (router navigation); without it, fall back to a full
+ * redirect to the login page. A failed login is left alone so the form can show
+ * the error.
  */
 export function handleUnauthorized(error: unknown): Promise<never> {
   if (
@@ -36,7 +39,8 @@ export function handleUnauthorized(error: unknown): Promise<never> {
     !error.config?.url?.endsWith(LOGIN_ENDPOINT)
   ) {
     clearToken();
-    if (browser.currentPath() !== LOGIN_PATH) {
+    const handled = notifySessionExpired();
+    if (!handled && browser.currentPath() !== LOGIN_PATH) {
       browser.goTo(LOGIN_PATH);
     }
   }
