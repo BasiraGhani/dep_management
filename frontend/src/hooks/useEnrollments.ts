@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { enroll, unenroll } from '../api/enrollments';
 import type { EnrollmentCreate } from '../types';
 import { courseKeys } from './useCourses';
+import { dashboardKeys } from './useDashboard';
 import { studentKeys } from './useStudents';
 
 /** Enrolling changes the course roster, the student's enrollments and dashboards. */
@@ -13,7 +14,7 @@ function useInvalidateEnrollments() {
       queryClient.invalidateQueries({ queryKey: courseKeys.all }),
       queryClient.invalidateQueries({ queryKey: studentKeys.all }),
       queryClient.invalidateQueries({ queryKey: ['enrollments'] }),
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all }),
     ]);
   };
 }
