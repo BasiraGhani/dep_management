@@ -23,13 +23,19 @@ const account = (id: number, username: string, extra: Partial<UserOut> = {}): Us
   is_active: true,
   teacher_id: null,
   student_id: null,
+  linked_name: null,
   created_at: '2026-09-01T10:00:00Z',
   updated_at: '2026-09-01T10:00:00Z',
   ...extra,
 });
 const me = account(10, 'demo.admin'); // meFor('admin') has id 10
-const kay = account(11, 'alan.kay', { role: 'teacher', teacher_id: 2 });
-const amira = account(12, 'amira', { role: 'student', student_id: 1, is_active: false });
+const kay = account(11, 'alan.kay', { role: 'teacher', teacher_id: 2, linked_name: 'Alan Kay' });
+const amira = account(12, 'amira', {
+  role: 'student',
+  student_id: 1,
+  linked_name: 'Amira Costa',
+  is_active: false,
+});
 
 beforeEach(() => {
   clearToken();
@@ -68,6 +74,9 @@ describe('list (FR-8.1)', () => {
     expect(
       await within(rowOf('amira')).findByRole('link', { name: 'Amira Costa' }),
     ).toHaveAttribute('href', '/students/1');
+    // The names come with the list (linked_name): no request per row.
+    expect(getTeacher).not.toHaveBeenCalled();
+    expect(getStudent).not.toHaveBeenCalled();
     expect(rowOf('alan.kay')).toHaveTextContent('Active');
     expect(rowOf('amira')).toHaveTextContent('Deactivated');
   });

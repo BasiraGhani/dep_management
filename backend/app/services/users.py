@@ -18,7 +18,7 @@ import secrets
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.security import hash_password
 from app.models import Department, Student, Teacher, User, UserRole
@@ -58,7 +58,9 @@ def list_users(
     if is_active is not None:
         query = query.where(User.is_active == is_active)
     total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
-    items = db.scalars(query.order_by(User.username).offset(skip).limit(limit)).all()
+    # Load the linked records with the page (for `linked_name`): no query per row.
+    page = query.options(joinedload(User.teacher), joinedload(User.student))
+    items = db.scalars(page.order_by(User.username).offset(skip).limit(limit)).all()
     return list(items), total
 
 

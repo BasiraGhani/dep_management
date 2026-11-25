@@ -55,6 +55,7 @@ beforeEach(() => {
         is_active: true,
         teacher_id: 2,
         student_id: null,
+        linked_name: 'Alan Kay',
         created_at: '2026-09-01T10:00:00Z',
         updated_at: '2026-09-01T10:00:00Z',
       },
