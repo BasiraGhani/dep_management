@@ -8,6 +8,7 @@ import pytest
 from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
 
+from app.config import get_settings
 from app.core import security
 from app.core.security import (
     FAILURE_WINDOW_SECONDS,
@@ -195,13 +196,17 @@ def test_every_other_endpoint_requires_a_token(client: TestClient, method: str, 
 # ===================================================== CORS (NFR-1)
 
 
-@pytest.mark.parametrize(
-    ("origin", "allowed"),
-    [("http://localhost:5173", True), ("https://evil.example", False)],
-)
+def frontend_origin() -> str:
+    """The configured frontend origin (from CORS_ORIGINS, so a developer's own
+    backend/.env doesn't break these tests)."""
+    return get_settings().cors_origins[0]
+
+
+@pytest.mark.parametrize(("which", "allowed"), [("frontend", True), ("other", False)])
 def test_cors_allows_only_the_frontend_origin(
-    client: TestClient, origin: str, allowed: bool
+    client: TestClient, which: str, allowed: bool
 ) -> None:
+    origin = frontend_origin() if which == "frontend" else "https://evil.example"
     response = client.options(
         "/api/v1/departments",
         headers={
@@ -210,14 +215,15 @@ def test_cors_allows_only_the_frontend_origin(
             "Access-Control-Request-Headers": "authorization",
         },
     )
-    assert (response.headers.get("access-control-allow-origin") == origin) is allowed
+    allow_origin = response.headers.get("access-control-allow-origin")
+    assert allow_origin == (origin if allowed else None)  # never "*", never an outsider
 
 
 def test_cors_does_not_allow_credentials_or_unexpected_headers(client: TestClient) -> None:
     response = client.options(
         "/api/v1/departments",
         headers={
-            "Origin": "http://localhost:5173",
+            "Origin": frontend_origin(),  # an allowed origin: only the header is wrong
             "Access-Control-Request-Method": "GET",
             "Access-Control-Request-Headers": "x-custom-header",
         },
