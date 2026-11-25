@@ -136,6 +136,7 @@ const FORMS: [path: string, role: UserRole, heading: string, button: string, pre
   ['/students/1', 'admin', 'Amira Costa', 'Edit'],
   ['/courses/11', 'admin', 'CS101 Programming', 'Edit'],
   ['/users', 'admin', 'User management', 'New account', 'student'],
+  ['/users', 'admin', 'User management', 'Edit alan.kay'],
   ['/profile', 'teacher', 'My profile', 'Edit my contact details'],
   ['/profile', 'student', 'My profile', 'Edit my contact details'],
 ];

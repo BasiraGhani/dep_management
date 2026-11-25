@@ -281,3 +281,96 @@ describe('create an account (FR-8.1)', () => {
     expect(within(dialog).getByLabelText(field)).toHaveAttribute('aria-invalid', 'true');
   });
 });
+
+describe('edit an account (role and linked record)', () => {
+  async function openEdit(username: string) {
+    const user = await open();
+    await user.click(screen.getByRole('button', { name: `Edit ${username}` }));
+    const dialog = screen.getByRole('dialog', { name: `Edit account ${username}` });
+    return { user, dialog };
+  }
+
+  it('there is no Edit button on your own account', async () => {
+    await open();
+    expect(screen.queryByRole('button', { name: 'Edit demo.admin' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit alan.kay' })).toBeInTheDocument();
+  });
+
+  it('opens with the current role and link, without username or password fields', async () => {
+    const { dialog } = await openEdit('alan.kay');
+
+    expect(within(dialog).getByLabelText(/^Role/)).toHaveValue('teacher');
+    await waitFor(() => {
+      expect(within(dialog).getByLabelText(/^Teacher/)).toHaveValue('2');
+    });
+    expect(within(dialog).queryByLabelText(/Username/)).not.toBeInTheDocument();
+    expect(within(dialog).queryByLabelText(/password/i)).not.toBeInTheDocument();
+    expect(dialog).toHaveTextContent('alan.kay');
+  });
+
+  it('saves a new role for the same teacher', async () => {
+    vi.mocked(updateUser).mockResolvedValue({ ...kay, role: 'hod' });
+    const { user, dialog } = await openEdit('alan.kay');
+    await waitFor(() => {
+      expect(within(dialog).getByLabelText(/^Teacher/)).toHaveValue('2');
+    });
+
+    await user.selectOptions(within(dialog).getByLabelText(/^Role/), 'Head of department');
+    await user.selectOptions(within(dialog).getByLabelText(/^Teacher/), 'Kay, Alan');
+    await user.click(within(dialog).getByRole('button', { name: 'Save changes' }));
+
+    expect(updateUser).toHaveBeenCalledWith(11, { role: 'hod', teacher_id: 2, student_id: null });
+    expect(await screen.findByRole('status')).toHaveTextContent('Account alan.kay updated');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('shows the head-of-department rule (BR-6) under Role', async () => {
+    const detail =
+      "Alan Kay doesn't head a department, so the account can't be hod. Make them head first.";
+    vi.mocked(updateUser).mockRejectedValue(apiError(422, detail));
+    const { user, dialog } = await openEdit('alan.kay');
+    await user.selectOptions(within(dialog).getByLabelText(/^Role/), 'Head of department');
+    await user.selectOptions(await within(dialog).findByLabelText(/^Teacher/), 'Kay, Alan');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Save changes' }));
+
+    expect(await within(dialog).findByText(detail)).toBeInTheDocument();
+    expect(within(dialog).getByLabelText(/^Role/)).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it("keeps showing the linked student even when the search doesn't list them", async () => {
+    vi.mocked(listStudents).mockResolvedValue({ items: [], total: 0 });
+    const { dialog } = await openEdit('amira');
+
+    const student = within(dialog).getByLabelText(/^Student/);
+    expect(student).toHaveValue('1');
+    expect(
+      await within(student).findByRole('option', { name: 'CS2026001 — Amira Costa' }),
+    ).toBeInTheDocument();
+  });
+
+  it('turning a student account into an admin clears its link', async () => {
+    vi.mocked(updateUser).mockResolvedValue({ ...amira, role: 'admin', student_id: null });
+    const { user, dialog } = await openEdit('amira');
+
+    await user.selectOptions(within(dialog).getByLabelText(/^Role/), 'Administrator');
+    expect(within(dialog).queryByLabelText(/^Student/)).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Save changes' }));
+
+    expect(updateUser).toHaveBeenCalledWith(12, {
+      role: 'admin',
+      teacher_id: null,
+      student_id: null,
+    });
+  });
+
+  it('asks for the record a new role needs', async () => {
+    const { user, dialog } = await openEdit('amira');
+
+    await user.selectOptions(within(dialog).getByLabelText(/^Role/), 'Teacher');
+    await user.click(within(dialog).getByRole('button', { name: 'Save changes' }));
+
+    expect(within(dialog).getByText('Choose the teacher')).toBeInTheDocument();
+    expect(updateUser).not.toHaveBeenCalled();
+  });
+});

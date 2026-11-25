@@ -51,6 +51,7 @@ export function UsersPage() {
   const [active, setActive] = useState('');
   const [skip, setSkip] = useState(0);
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<UserOut | null>(null);
   const [pending, setPending] = useState<Pending>(null);
   const [revealed, setRevealed] = useState<{ username: string; password: string } | null>(null);
   const update = useUpdateUser();
@@ -130,6 +131,19 @@ export function UsersPage() {
       header: 'Actions',
       render: (u) => (
         <div className="flex flex-wrap gap-2">
+          {u.id !== me?.id && (
+            // Your own role can't change (the API refuses), and an admin has no link.
+            <button
+              type="button"
+              aria-label={`Edit ${u.username}`}
+              onClick={() => {
+                setEditing(u);
+              }}
+              className="rounded border border-slate-300 px-2 py-1 text-sm hover:bg-slate-50"
+            >
+              Edit
+            </button>
+          )}
           {u.id !== me?.id &&
             (u.is_active ? (
               <button
@@ -250,6 +264,16 @@ export function UsersPage() {
           setCreating(false);
         }}
       />
+      {editing && (
+        <UserFormModal
+          key={editing.id}
+          open
+          user={editing}
+          onClose={() => {
+            setEditing(null);
+          }}
+        />
+      )}
       <ConfirmDialog
         open={pending !== null}
         title={
