@@ -14,14 +14,14 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import cast
 
-import httpx
+import httpx2
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.models import Department, User, UserRole
 from tests.conftest import Factory
-from tests.helpers import auth_headers
+from tests.helpers import ParamValue, auth_headers
 
 URL = "/api/v1/departments"
 ROLES = ["admin", "hod", "teacher", "student"]
@@ -140,7 +140,7 @@ def test_limit_defaults_to_20(client: TestClient, factory: Factory, world: World
     [{"limit": 0}, {"limit": 101}, {"skip": -1}, {"limit": "abc"}, {"search": "x" * 101}],
 )
 def test_invalid_list_parameters_are_rejected(
-    client: TestClient, world: World, params: dict[str, object]
+    client: TestClient, world: World, params: dict[str, ParamValue]
 ) -> None:
     response = client.get(URL, params=params, headers=auth_headers(world.admin))
     assert response.status_code == 422
@@ -275,8 +275,8 @@ def test_detail_requires_authentication(client: TestClient, world: World) -> Non
 
 def patch(
     client: TestClient, user: User, dept: Department, payload: Mapping[str, object]
-) -> httpx.Response:
-    response: httpx.Response = client.patch(
+) -> httpx2.Response:
+    response: httpx2.Response = client.patch(
         f"{URL}/{dept.id}", json=dict(payload), headers=auth_headers(user)
     )
     return response

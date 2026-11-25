@@ -10,6 +10,10 @@ from sqlalchemy.orm import Session
 from app.core.security import create_access_token
 from app.models import User
 
+# A query-string value, as the test client (httpx2) accepts it.
+ParamValue = str | int | float | bool | None
+
+
 # IntegrityError messages differ by database; these patterns match both.
 FK_VIOLATION = r"FOREIGN KEY constraint failed|violates foreign key constraint"
 

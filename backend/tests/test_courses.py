@@ -14,7 +14,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import cast
 
-import httpx
+import httpx2
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select
@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Course, Department, Enrollment, Grade, Teacher, User, UserRole
 from tests.conftest import Factory
-from tests.helpers import auth_headers
+from tests.helpers import ParamValue, auth_headers
 
 URL = "/api/v1/courses"
 ROLES = ["admin", "hod", "teacher", "teacher_b", "student"]
@@ -106,14 +106,14 @@ def new_course(department_id: int, **overrides: object) -> dict[str, object]:
 
 def patch(
     client: TestClient, user: User, course: Course, payload: Mapping[str, object]
-) -> httpx.Response:
-    response: httpx.Response = client.patch(
+) -> httpx2.Response:
+    response: httpx2.Response = client.patch(
         f"{URL}/{course.id}", json=dict(payload), headers=auth_headers(user)
     )
     return response
 
 
-def codes(response: httpx.Response) -> list[str]:
+def codes(response: httpx2.Response) -> list[str]:
     return [c["code"] for c in response.json()["items"]]
 
 
@@ -145,7 +145,7 @@ def test_search_by_code_or_title(
 
 
 def test_filter_by_department_and_teacher(client: TestClient, world: World) -> None:
-    def listed(**params: object) -> list[str]:
+    def listed(**params: ParamValue) -> list[str]:
         return codes(client.get(URL, params=params, headers=auth_headers(world.admin)))
 
     assert listed(department_id=world.dept_b.id) == ["B1"]
@@ -162,7 +162,7 @@ def test_pagination(client: TestClient, world: World) -> None:
 
 @pytest.mark.parametrize("params", [{"teacher_id": "x"}, {"limit": 0}, {"skip": -1}])
 def test_invalid_list_parameters(
-    client: TestClient, world: World, params: dict[str, object]
+    client: TestClient, world: World, params: dict[str, ParamValue]
 ) -> None:
     assert client.get(URL, params=params, headers=auth_headers(world.admin)).status_code == 422
 

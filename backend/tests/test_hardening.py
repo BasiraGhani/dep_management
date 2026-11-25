@@ -3,7 +3,7 @@ endpoint, CORS limited to the frontend origin, and accurate API docs."""
 
 import re
 
-import httpx
+import httpx2
 import pytest
 from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
@@ -35,8 +35,10 @@ PASSWORD = "correct-horse-battery"
 LOGIN = "/api/v1/auth/login"
 
 
-def login(client: TestClient, username: str, password: str) -> httpx.Response:
-    response: httpx.Response = client.post(LOGIN, data={"username": username, "password": password})
+def login(client: TestClient, username: str, password: str) -> httpx2.Response:
+    response: httpx2.Response = client.post(
+        LOGIN, data={"username": username, "password": password}
+    )
     return response
 
 

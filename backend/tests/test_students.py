@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import cast
 
-import httpx
+import httpx2
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select
@@ -32,7 +32,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Department, Enrollment, Grade, Student, StudentStatus, User, UserRole
 from tests.conftest import Factory
-from tests.helpers import auth_headers
+from tests.helpers import ParamValue, auth_headers
 
 URL = "/api/v1/students"
 ROLES = ["admin", "hod", "teacher", "student"]
@@ -124,14 +124,14 @@ def new_student(department_id: int, **overrides: object) -> dict[str, object]:
 
 def patch(
     client: TestClient, user: User, student: Student, payload: Mapping[str, object]
-) -> httpx.Response:
-    response: httpx.Response = client.patch(
+) -> httpx2.Response:
+    response: httpx2.Response = client.patch(
         f"{URL}/{student.id}", json=dict(payload), headers=auth_headers(user)
     )
     return response
 
 
-def first_names(response: httpx.Response) -> list[str]:
+def first_names(response: httpx2.Response) -> list[str]:
     return [s["first_name"] for s in response.json()["items"]]
 
 
@@ -224,7 +224,7 @@ def test_search_by_name_email_or_student_number(
     ],
 )
 def test_filters_by_department_year_and_status(
-    client: TestClient, world: World, params: dict[str, object], visible: list[str]
+    client: TestClient, world: World, params: dict[str, ParamValue], visible: list[str]
 ) -> None:
     ids = {"DEPT_A": world.dept_a.id, "DEPT_B": world.dept_b.id}
     resolved = {k: ids.get(str(v), v) for k, v in params.items()}
@@ -245,7 +245,7 @@ def test_pagination(client: TestClient, world: World) -> None:
     "params", [{"year": 0}, {"year": 7}, {"status": "expelled"}, {"limit": 101}]
 )
 def test_invalid_filters_are_rejected(
-    client: TestClient, world: World, params: dict[str, object]
+    client: TestClient, world: World, params: dict[str, ParamValue]
 ) -> None:
     assert client.get(URL, params=params, headers=auth_headers(world.admin)).status_code == 422
 
