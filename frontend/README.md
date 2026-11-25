@@ -29,6 +29,10 @@ npm run build
 
 `npm run format` applies Prettier formatting.
 
+`npm run check:lock` checks that `package-lock.json` is complete (CI runs it first).
+`npm install` on macOS sometimes drops entries that Linux needs, which breaks `npm ci`
+in CI and Docker; `npm run check:lock -- --fix` copies them back from `origin/main`.
+
 ## End-to-end smoke test
 
 `e2e/smoke.e2e.ts` (Playwright) signs in as each demo role and does one key action:

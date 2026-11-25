@@ -105,6 +105,11 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
+      - name: Check package-lock.json is complete
+        # Fails with a clear message (and the fix) if npm on macOS dropped entries
+        # that Linux needs, instead of a confusing npm ci error.
+        run: npm run check:lock
+
       - name: Install dependencies
         run: npm ci
 
