@@ -28,6 +28,8 @@ All tables have `id` (integer primary key), `created_at` and `updated_at` (UTC t
 
 Constraint: `admin` has neither link; `hod` and `teacher` have only `teacher_id`; `student` has only `student_id`. The service layer enforces this.
 
+API responses for users also include `linked_name`: the linked teacher's or student's "First Last" (`null` for admins). It is computed, not stored.
+
 ### departments
 | Column | Type | Notes |
 |---|---|---|
@@ -108,7 +110,7 @@ List endpoints accept `search`, `skip` and `limit`, plus the filters shown, and 
 | POST | `/auth/login` | Username/password → `{access_token, token_type}` | public |
 | GET | `/auth/me` | Current user + linked record | all |
 | POST | `/auth/change-password` | Change own password | all |
-| GET | `/users` | List users (`role`, `is_active`) | admin |
+| GET | `/users` | List users (`role`, `is_active`); each includes `linked_name` | admin |
 | POST | `/users` | Create user | admin |
 | PATCH | `/users/{id}` | Activate, deactivate, change role or links | admin |
 | POST | `/users/{id}/reset-password` | Set a temporary password | admin |

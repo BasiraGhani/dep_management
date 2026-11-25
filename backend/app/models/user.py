@@ -48,6 +48,12 @@ class User(IdMixin, TimestampMixin, Base):
     teacher: Mapped["Teacher | None"] = relationship(back_populates="user")
     student: Mapped["Student | None"] = relationship(back_populates="user")
 
+    @property
+    def linked_name(self) -> str | None:
+        """The linked teacher's or student's name ("First Last"); None for admins."""
+        person = self.teacher or self.student
+        return f"{person.first_name} {person.last_name}" if person else None
+
     @validates("username")
     def _normalize_username(self, _key: str, value: str) -> str:
         """Usernames are stored lowercase, which makes uniqueness case-insensitive (BR-1)."""

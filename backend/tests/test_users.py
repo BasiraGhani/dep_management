@@ -14,7 +14,7 @@ from typing import cast
 import httpx2
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import event, select
 from sqlalchemy.orm import Session
 
 from app.core.security import verify_password
@@ -522,3 +522,66 @@ def test_admin_cannot_delete_their_own_account(client: TestClient, world: World)
 
 def test_delete_of_a_missing_user_is_404(client: TestClient, world: World) -> None:
     assert client.delete(f"{URL}/999999", headers=auth_headers(world.admin)).status_code == 404
+
+
+# ===================================================== linked_name (who an account belongs to)
+
+
+def names_by_username(client: TestClient, world: World) -> dict[str, str | None]:
+    body = client.get(URL, params={"limit": 100}, headers=auth_headers(world.admin)).json()
+    return {u["username"]: u["linked_name"] for u in body["items"]}
+
+
+def test_the_list_names_each_linked_person(client: TestClient, world: World) -> None:
+    names = names_by_username(client, world)
+
+    assert names[world.admin.username] is None  # admins have no linked record
+    assert names[world.hod.username] == "Hedy Head"
+    teacher, student = world.teacher_a, world.s1
+    assert names[world.teacher.username] == f"{teacher.first_name} {teacher.last_name}"
+    assert names[world.student.username] == f"{student.first_name} {student.last_name}"
+
+
+def test_create_and_update_return_the_linked_name(client: TestClient, world: World) -> None:
+    created = create(client, world, role="teacher", teacher_id=world.t_free.id)
+    assert created.status_code == 201, created.text
+    assert created.json()["linked_name"] == "Fran Free"
+
+    updated = client.patch(
+        f"{URL}/{created.json()['id']}",
+        json={"role": "admin", "teacher_id": None},
+        headers=auth_headers(world.admin),
+    )
+    assert updated.json()["linked_name"] is None
+
+
+def test_me_includes_the_linked_name(client: TestClient, world: World) -> None:
+    me = client.get("/api/v1/auth/me", headers=auth_headers(world.hod)).json()
+    assert me["linked_name"] == "Hedy Head"
+
+
+def test_listing_users_does_not_query_once_per_row(
+    client: TestClient, session: Session, factory: Factory, world: World
+) -> None:
+    """The names come with the page (a join), so more rows mean no more queries."""
+    statements: list[str] = []
+
+    def count(*args: object) -> None:
+        statements.append(str(args[2]))
+
+    def queries_for_list() -> int:
+        statements.clear()
+        event.listen(session.connection(), "before_cursor_execute", count)
+        try:
+            names_by_username(client, world)
+        finally:
+            event.remove(session.connection(), "before_cursor_execute", count)
+        return len(statements)
+
+    before = queries_for_list()
+    for _ in range(5):
+        factory.user(UserRole.STUDENT)
+        factory.user(UserRole.TEACHER)
+    session.commit()
+
+    assert queries_for_list() == before

@@ -10,6 +10,7 @@ export const teacherMe: CurrentUserOut = {
   is_active: true,
   teacher_id: 2,
   student_id: null,
+  linked_name: 'Alan Kay',
   created_at: '2026-09-01T10:00:00Z',
   updated_at: '2026-09-01T10:00:00Z',
   teacher: {
@@ -44,13 +45,14 @@ export const networkError = new AxiosError('Network Error', 'ERR_NETWORK');
 /** GET /auth/me for an account with `role` (teacher/student links filled as needed). */
 export function meFor(role: CurrentUserOut['role']): CurrentUserOut {
   const base = { ...teacherMe, id: 10, username: `demo.${role}`, role };
-  if (role === 'admin') return { ...base, teacher_id: null, teacher: null };
+  if (role === 'admin') return { ...base, teacher_id: null, teacher: null, linked_name: null };
   if (role === 'student') {
     return {
       ...base,
       teacher_id: null,
       teacher: null,
       student_id: 1,
+      linked_name: 'Amira Costa',
       student: {
         id: 1,
         student_no: 'CS2026001',

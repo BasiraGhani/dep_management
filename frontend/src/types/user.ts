@@ -7,6 +7,8 @@ export interface UserOut {
   is_active: boolean;
   teacher_id: number | null;
   student_id: number | null;
+  /** The linked teacher's or student's "First Last"; null for admins. */
+  linked_name: string | null;
   created_at: IsoDateTime;
   updated_at: IsoDateTime;
 }

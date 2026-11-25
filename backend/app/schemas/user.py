@@ -21,6 +21,9 @@ class UserOut(BaseModel):
     is_active: bool
     teacher_id: int | None
     student_id: int | None
+    # The linked teacher's or student's "First Last" (None for admins), so lists
+    # can show who an account belongs to without fetching each record.
+    linked_name: str | None
     created_at: datetime
     updated_at: datetime
 

@@ -13,32 +13,12 @@ import { SearchInput } from '../components/SearchInput';
 import { TemporaryPasswordDialog } from '../components/users/TemporaryPasswordDialog';
 import { UserFormModal } from '../components/users/UserFormModal';
 import { useToast } from '../components/useToast';
-import { useStudentQuery } from '../hooks/useStudents';
-import { useTeacherQuery } from '../hooks/useTeachers';
 import { useResetPassword, useUpdateUser, useUsersQuery } from '../hooks/useUsers';
 import { ROLE_LABEL } from '../lib/labels';
 import type { UserOut, UserRole } from '../types';
 
 const PAGE_SIZE = 20;
 const ROLES = Object.keys(ROLE_LABEL) as UserRole[];
-
-function TeacherName({ id }: { id: number }) {
-  const q = useTeacherQuery(id);
-  return (
-    <Link to={`/teachers/${String(id)}`} className="text-blue-700 hover:underline">
-      {q.data ? `${q.data.first_name} ${q.data.last_name}` : `Teacher #${String(id)}`}
-    </Link>
-  );
-}
-
-function StudentName({ id }: { id: number }) {
-  const q = useStudentQuery(id);
-  return (
-    <Link to={`/students/${String(id)}`} className="text-blue-700 hover:underline">
-      {q.data ? `${q.data.first_name} ${q.data.last_name}` : `Student #${String(id)}`}
-    </Link>
-  );
-}
 
 type Pending = { kind: 'deactivate' | 'reset'; user: UserOut } | null;
 
@@ -107,14 +87,22 @@ export function UsersPage() {
     {
       key: 'linked',
       header: 'Linked record',
-      render: (u) =>
-        u.teacher_id !== null ? (
-          <TeacherName id={u.teacher_id} />
-        ) : u.student_id !== null ? (
-          <StudentName id={u.student_id} />
+      // The API sends the name with each account (linked_name): no request per row.
+      render: (u) => {
+        const to =
+          u.teacher_id !== null
+            ? `/teachers/${String(u.teacher_id)}`
+            : u.student_id !== null
+              ? `/students/${String(u.student_id)}`
+              : null;
+        return to ? (
+          <Link to={to} className="text-blue-700 hover:underline">
+            {u.linked_name ?? 'Linked record'}
+          </Link>
         ) : (
           '—'
-        ),
+        );
+      },
     },
     {
       key: 'status',
