@@ -11,7 +11,7 @@
 from dataclasses import dataclass
 from typing import cast
 
-import httpx
+import httpx2
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -77,8 +77,8 @@ def world(session: Session, factory: Factory) -> World:
 
 def set_grade(
     client: TestClient, user: User, enrollment: Enrollment, grade: object
-) -> httpx.Response:
-    response: httpx.Response = client.patch(
+) -> httpx2.Response:
+    response: httpx2.Response = client.patch(
         f"/api/v1/enrollments/{enrollment.id}/grade",
         json={"grade": grade},
         headers=auth_headers(user),
@@ -86,8 +86,8 @@ def set_grade(
     return response
 
 
-def bulk(client: TestClient, user: User, course: Course, rows: object) -> httpx.Response:
-    response: httpx.Response = client.put(
+def bulk(client: TestClient, user: User, course: Course, rows: object) -> httpx2.Response:
+    response: httpx2.Response = client.put(
         f"/api/v1/courses/{course.id}/grades", json=rows, headers=auth_headers(user)
     )
     return response

@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import cast
 
-import httpx
+import httpx2
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Department, Teacher, TeacherTitle, User, UserRole
 from tests.conftest import Factory
-from tests.helpers import auth_headers
+from tests.helpers import ParamValue, auth_headers
 
 URL = "/api/v1/teachers"
 ROLES = ["admin", "hod", "teacher", "student"]
@@ -95,8 +95,8 @@ def new_teacher(department_id: int, **overrides: object) -> dict[str, object]:
 
 def patch(
     client: TestClient, user: User, teacher: Teacher, payload: Mapping[str, object]
-) -> httpx.Response:
-    response: httpx.Response = client.patch(
+) -> httpx2.Response:
+    response: httpx2.Response = client.patch(
         f"{URL}/{teacher.id}", json=dict(payload), headers=auth_headers(user)
     )
     return response
@@ -170,7 +170,10 @@ def test_filter_by_title(client: TestClient, world: World) -> None:
 
 
 def test_filters_and_search_combine(client: TestClient, world: World) -> None:
-    params = {"department_id": world.dept_a.id, "search": "o"}  # Tom, Olga(B) excluded
+    params: dict[str, ParamValue] = {
+        "department_id": world.dept_a.id,
+        "search": "o",
+    }  # Tom, Olga(B) excluded
     body = client.get(URL, params=params, headers=auth_headers(world.admin)).json()
 
     assert [t["last_name"] for t in body["items"]] == ["Teach"]
@@ -186,7 +189,7 @@ def test_pagination(client: TestClient, world: World) -> None:
 
 @pytest.mark.parametrize("params", [{"title": "dean"}, {"department_id": "x"}, {"limit": 101}])
 def test_invalid_filters_are_rejected(
-    client: TestClient, world: World, params: dict[str, object]
+    client: TestClient, world: World, params: dict[str, ParamValue]
 ) -> None:
     assert client.get(URL, params=params, headers=auth_headers(world.admin)).status_code == 422
 

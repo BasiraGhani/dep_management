@@ -13,7 +13,7 @@ and the Enrollments row of the permission matrix.
 from dataclasses import dataclass
 from typing import cast
 
-import httpx
+import httpx2
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
@@ -100,13 +100,13 @@ def world(session: Session, factory: Factory) -> World:
 
 def enroll(
     client: TestClient, user: User, student: Student, course: Course, semester: str = "2027-Spring"
-) -> httpx.Response:
+) -> httpx2.Response:
     payload = {"student_id": student.id, "course_id": course.id, "semester": semester}
-    response: httpx.Response = client.post(URL, json=payload, headers=auth_headers(user))
+    response: httpx2.Response = client.post(URL, json=payload, headers=auth_headers(user))
     return response
 
 
-def listed(response: httpx.Response) -> set[int]:
+def listed(response: httpx2.Response) -> set[int]:
     return {e["id"] for e in response.json()["items"]}
 
 

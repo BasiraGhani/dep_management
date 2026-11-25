@@ -3,6 +3,6 @@
 pytest==9.2.0
 pytest-random-order==1.2.0
 pytest-cov==7.1.0
-httpx==0.28.1
+httpx2==2.16.0  # Starlette TestClient (successor of httpx; plain httpx is deprecated there)
 ruff==0.17.6
 mypy==2.4.1

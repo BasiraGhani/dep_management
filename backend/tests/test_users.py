@@ -11,7 +11,7 @@ the approved DELETE /users/{id}.
 from dataclasses import dataclass
 from typing import cast
 
-import httpx
+import httpx2
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
@@ -74,21 +74,21 @@ def world(session: Session, factory: Factory) -> World:
     return world
 
 
-def create(client: TestClient, world: World, **payload: object) -> httpx.Response:
+def create(client: TestClient, world: World, **payload: object) -> httpx2.Response:
     body = {"username": "newbie", "password": PASSWORD, **payload}
-    response: httpx.Response = client.post(URL, json=body, headers=auth_headers(world.admin))
+    response: httpx2.Response = client.post(URL, json=body, headers=auth_headers(world.admin))
     return response
 
 
-def patch(client: TestClient, world: World, user: User, **payload: object) -> httpx.Response:
-    response: httpx.Response = client.patch(
+def patch(client: TestClient, world: World, user: User, **payload: object) -> httpx2.Response:
+    response: httpx2.Response = client.patch(
         f"{URL}/{user.id}", json=payload, headers=auth_headers(world.admin)
     )
     return response
 
 
 def login(client: TestClient, username: str, password: str = PASSWORD) -> int:
-    response: httpx.Response = client.post(
+    response: httpx2.Response = client.post(
         "/api/v1/auth/login", data={"username": username, "password": password}
     )
     return response.status_code

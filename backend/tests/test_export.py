@@ -11,7 +11,7 @@ import csv
 import io
 from dataclasses import dataclass
 
-import httpx
+import httpx2
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from app.models import Department, StudentStatus, Teacher, TeacherTitle, User, UserRole
 from app.services.export import safe_cell
 from tests.conftest import Factory
-from tests.helpers import auth_headers
+from tests.helpers import ParamValue, auth_headers
 
 STUDENT_HEADER = [
     "id", "student_no", "first_name", "last_name", "email", "phone",
@@ -74,19 +74,19 @@ def world(session: Session, factory: Factory) -> World:
     return world
 
 
-def export(client: TestClient, user: User, resource: str, **params: object) -> httpx.Response:
-    response: httpx.Response = client.get(
+def export(client: TestClient, user: User, resource: str, **params: ParamValue) -> httpx2.Response:
+    response: httpx2.Response = client.get(
         f"/api/v1/export/{resource}.csv", params=params, headers=auth_headers(user)
     )
     return response
 
 
-def rows(response: httpx.Response) -> list[list[str]]:
+def rows(response: httpx2.Response) -> list[list[str]]:
     assert response.status_code == 200, response.text
     return list(csv.reader(io.StringIO(response.text)))
 
 
-def column(response: httpx.Response, name: str) -> list[str]:
+def column(response: httpx2.Response, name: str) -> list[str]:
     header, *data = rows(response)
     index = header.index(name)
     return [row[index] for row in data]
@@ -153,7 +153,7 @@ def test_empty_result_is_just_the_header(client: TestClient, world: World) -> No
     ],
 )
 def test_student_filters(
-    client: TestClient, world: World, params: dict[str, object], numbers: list[str]
+    client: TestClient, world: World, params: dict[str, ParamValue], numbers: list[str]
 ) -> None:
     ids = {"A": world.dept_a.id, "B": world.dept_b.id}
     resolved = {k: ids.get(str(v), v) for k, v in params.items()}
@@ -171,7 +171,7 @@ def test_student_filters(
     ],
 )
 def test_teacher_filters(
-    client: TestClient, world: World, params: dict[str, object], names: list[str]
+    client: TestClient, world: World, params: dict[str, ParamValue], names: list[str]
 ) -> None:
     resolved = {k: (world.dept_b.id if v == "B" else v) for k, v in params.items()}
     assert column(export(client, world.admin, "teachers", **resolved), "last_name") == names
@@ -187,7 +187,7 @@ def test_teacher_filters(
     ],
 )
 def test_course_filters(
-    client: TestClient, world: World, params: dict[str, object], codes: list[str]
+    client: TestClient, world: World, params: dict[str, ParamValue], codes: list[str]
 ) -> None:
     refs = {"TA": world.teacher_a.id, "A": world.dept_a.id}
     resolved = {k: refs.get(str(v), v) for k, v in params.items()}
@@ -201,7 +201,7 @@ def test_filters_that_do_not_apply_are_ignored(client: TestClient, world: World)
 
 @pytest.mark.parametrize("params", [{"year": 9}, {"status": "expelled"}, {"title": "dean"}])
 def test_invalid_filters_are_rejected(
-    client: TestClient, world: World, params: dict[str, object]
+    client: TestClient, world: World, params: dict[str, ParamValue]
 ) -> None:
     assert export(client, world.admin, "students", **params).status_code == 422
 

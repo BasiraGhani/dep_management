@@ -8,7 +8,7 @@
 
 from dataclasses import dataclass
 
-import httpx
+import httpx2
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -64,8 +64,8 @@ def world(session: Session, factory: Factory) -> World:
 
 def set_head(
     client: TestClient, world: World, department: Department, head: Teacher | None
-) -> httpx.Response:
-    response: httpx.Response = client.patch(
+) -> httpx2.Response:
+    response: httpx2.Response = client.patch(
         f"/api/v1/departments/{department.id}",
         json={"head_id": head.id if head else None},
         headers=auth_headers(world.admin),
