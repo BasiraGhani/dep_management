@@ -143,7 +143,7 @@ describe('FR-4.4 delete with confirmation', () => {
   it("shows the server's 409 when the student still has a login account", async () => {
     logIn(meFor('admin'));
     const message =
-      "Student can't be deleted: they have a login account (delete it first: DELETE /users/{id})";
+      "Student can't be deleted: they have a login account (delete it on the Users page first)";
     vi.mocked(deleteStudent).mockRejectedValue(apiError(409, message));
     const user = userEvent.setup();
     renderApp('/students/1');

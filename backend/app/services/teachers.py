@@ -272,7 +272,7 @@ def delete_teacher(db: Session, teacher_id: int) -> None:
     if courses:
         reasons.append(f"teach {courses} course{'s' if courses != 1 else ''}")
     if db.scalar(select(User.id).where(User.teacher_id == teacher.id)) is not None:
-        reasons.append("have a login account (delete it first: DELETE /users/{id})")
+        reasons.append("have a login account (delete it on the Users page first)")
     if reasons:
         raise _http(
             status.HTTP_409_CONFLICT,

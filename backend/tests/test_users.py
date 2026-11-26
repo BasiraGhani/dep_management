@@ -267,7 +267,7 @@ def test_invalid_role_and_link_combinations_are_rejected(
         (
             {"role": "hod", "teacher_id": "t_free"},
             "Fran Free doesn't head a department, so the account can't be hod. "
-            "Make them a department head instead (PATCH /departments/{id}).",
+            "Make them the head on the department's page first.",
         ),
         (
             {"role": "teacher", "teacher_id": "head_b"},
@@ -491,7 +491,7 @@ def test_deleting_an_account_keeps_the_teacher_and_unblocks_deleting_them(
     teacher_url = f"/api/v1/teachers/{world.teacher_a.id}"
     blocked = client.delete(teacher_url, headers=auth_headers(world.admin))
     assert blocked.status_code == 409
-    assert "DELETE /users/{id}" in blocked.json()["detail"]
+    assert "delete it on the Users page first" in blocked.json()["detail"]
 
     response = client.delete(f"{URL}/{world.teacher.id}", headers=auth_headers(world.admin))
 
