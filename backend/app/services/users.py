@@ -113,7 +113,7 @@ def _check_br6(db: Session, role: UserRole, teacher: Teacher) -> None:
     if role is UserRole.HOD and headed is None:
         raise _unprocessable(
             f"{name} doesn't head a department, so the account can't be hod. "
-            "Make them a department head instead (PATCH /departments/{id})."
+            "Make them the head on the department's page first."
         )
     if role is UserRole.TEACHER and headed is not None:
         raise _unprocessable(

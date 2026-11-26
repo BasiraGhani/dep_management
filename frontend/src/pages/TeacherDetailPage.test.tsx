@@ -193,7 +193,7 @@ describe('Teacher delete', () => {
   it("shows the server's 409 reasons when a teacher can't be deleted", async () => {
     logIn(meFor('admin'));
     const message =
-      "Teacher can't be deleted: they head department CS and teach 1 course and have a login account (delete it first: DELETE /users/{id})";
+      "Teacher can't be deleted: they head department CS and teach 1 course and have a login account (delete it on the Users page first)";
     vi.mocked(deleteTeacher).mockRejectedValue(apiError(409, message));
     const user = userEvent.setup();
     renderApp('/teachers/2');

@@ -328,7 +328,7 @@ def delete_student(db: Session, student_id: int, user: User) -> None:
         raise _http(
             status.HTTP_409_CONFLICT,
             "Student can't be deleted: they have a login account "
-            "(delete it first: DELETE /users/{id})",
+            "(delete it on the Users page first)",
         )
     db.delete(student)  # enrollments go too: ON DELETE CASCADE + ORM cascade
     db.commit()
